@@ -256,32 +256,32 @@ export default function Reminders() {
   const counts = getFilterCounts()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-foreground">Reminders</h2>
-          <p className="text-muted-foreground">Stay on top of asset maintenance and renewals</p>
+        <div className="text-center">
+          <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Alert System</h2>
+          <p className="text-muted-foreground text-lg">Intelligent maintenance and renewal scheduling</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus size={16} className="mr-2" />
-              Add Reminder
+            <Button className="bg-accent hover:bg-accent/80 text-accent-foreground px-6 py-3 rounded-xl">
+              <Plus size={18} className="mr-2" />
+              Schedule Alert
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md glass-card border-border/50">
             <DialogHeader>
-              <DialogTitle>Add New Reminder</DialogTitle>
+              <DialogTitle className="text-foreground text-xl">Deploy New Alert</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddReminder} className="space-y-4">
               <div className="space-y-2">
-                <Label>Asset <span className="text-destructive">*</span></Label>
+                <Label className="text-muted-foreground uppercase tracking-wider">Asset <span className="text-destructive">*</span></Label>
                 <Select value={formData.assetId} onValueChange={(value) => setFormData(prev => ({ ...prev, assetId: value }))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="glass-card border-border/50">
                     <SelectValue placeholder="Select asset" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="glass-card border-border/50">
                     {activeAssets.map(asset => (
                       <SelectItem key={asset.id} value={asset.id}>
                         {asset.name}
@@ -292,12 +292,12 @@ export default function Reminders() {
               </div>
 
               <div className="space-y-2">
-                <Label>Reminder Type <span className="text-destructive">*</span></Label>
+                <Label className="text-muted-foreground uppercase tracking-wider">Reminder Type <span className="text-destructive">*</span></Label>
                 <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="glass-card border-border/50">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="glass-card border-border/50">
                     {reminderTypes.map(type => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
@@ -308,30 +308,33 @@ export default function Reminders() {
               </div>
 
               <div className="space-y-2">
-                <Label>Title <span className="text-destructive">*</span></Label>
+                <Label className="text-muted-foreground uppercase tracking-wider">Title <span className="text-destructive">*</span></Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="e.g., Annual service due"
+                  className="glass-card border-border/50 focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Due Date <span className="text-destructive">*</span></Label>
+                <Label className="text-muted-foreground uppercase tracking-wider">Due Date <span className="text-destructive">*</span></Label>
                 <Input
                   type="date"
                   value={formData.dueDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                  className="glass-card border-border/50 focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label className="text-muted-foreground uppercase tracking-wider">Description</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Additional details..."
                   rows={2}
+                  className="glass-card border-border/50 focus:border-primary"
                 />
               </div>
 
@@ -341,17 +344,17 @@ export default function Reminders() {
                   checked={formData.recurring}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, recurring: !!checked }))}
                 />
-                <Label htmlFor="recurring">Recurring reminder</Label>
+                <Label htmlFor="recurring" className="text-muted-foreground">Recurring reminder</Label>
               </div>
 
               {formData.recurring && (
                 <div className="space-y-2">
-                  <Label>Frequency</Label>
+                  <Label className="text-muted-foreground uppercase tracking-wider">Frequency</Label>
                   <Select value={formData.frequency} onValueChange={(value) => setFormData(prev => ({ ...prev, frequency: value as any }))}>
-                    <SelectTrigger>
+                    <SelectTrigger className="glass-card border-border/50">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="glass-card border-border/50">
                       <SelectItem value="monthly">Monthly</SelectItem>
                       <SelectItem value="quarterly">Quarterly</SelectItem>
                       <SelectItem value="yearly">Yearly</SelectItem>
@@ -360,9 +363,9 @@ export default function Reminders() {
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">Add Reminder</Button>
-                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              <div className="flex gap-3 pt-4">
+                <Button type="submit" className="flex-1 bg-accent hover:bg-accent/80 text-accent-foreground">Deploy Alert</Button>
+                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} className="glass-card border-border/50">
                   Cancel
                 </Button>
               </div>
@@ -372,9 +375,9 @@ export default function Reminders() {
       </div>
 
       {/* Filter Tabs */}
-      <Card>
+      <Card className="glass-card">
         <CardContent className="pt-6">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-3">
             {[
               { key: 'pending', label: 'Pending', count: counts.pending, color: 'default' },
               { key: 'overdue', label: 'Overdue', count: counts.overdue, color: 'destructive' },
@@ -385,10 +388,14 @@ export default function Reminders() {
                 key={key}
                 variant={filter === key ? 'default' : 'outline'}
                 onClick={() => setFilter(key as any)}
-                className="justify-between"
+                className={`justify-between glass-card ${filter === key ? 'bg-primary/20 border-primary/50 text-primary' : 'border-border/50'}`}
               >
                 <span>{label}</span>
-                <Badge variant={color as any}>{count}</Badge>
+                <Badge variant={color as any} className={
+                  key === 'overdue' ? 'bg-destructive/20 text-destructive border-destructive/30' :
+                  key === 'completed' ? 'bg-success/20 text-success border-success/30' :
+                  'bg-primary/20 text-primary border-primary/30'
+                }>{count}</Badge>
               </Button>
             ))}
           </div>
@@ -397,23 +404,25 @@ export default function Reminders() {
 
       {/* Reminders List */}
       {filteredReminders.length === 0 ? (
-        <Card>
-          <CardContent className="pt-12 pb-12 text-center">
-            <Bell size={64} className="mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {filter === 'all' ? 'No Reminders Set' : `No ${filter} Reminders`}
+        <Card className="glass-card">
+          <CardContent className="pt-16 pb-16 text-center">
+            <div className="p-6 rounded-full bg-muted/20 w-fit mx-auto mb-6">
+              <Bell size={64} className="text-muted-foreground" />
+            </div>
+            <h3 className="text-2xl font-bold text-foreground mb-3">
+              {filter === 'all' ? 'Alert System Inactive' : `No ${filter} Alerts`}
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               {filter === 'all' 
-                ? 'Create reminders to stay on top of asset maintenance' 
-                : `No reminders match the ${filter} filter`
+                ? 'Deploy alerts to maintain optimal asset performance' 
+                : `No alerts match the ${filter} filter criteria`
               }
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredReminders.map((reminder) => {
+          {filteredReminders.map((reminder, index) => {
             const asset = assets.find(a => a.id === reminder.assetId)
             const typeConfig = reminderTypes.find(t => t.value === reminder.type)
             const TypeIcon = typeConfig?.icon || Bell
@@ -421,68 +430,92 @@ export default function Reminders() {
             const daysUntil = getDaysUntilDue(reminder.dueDate)
             
             return (
-              <Card key={reminder.id} className={`${overdue && !reminder.completed ? 'border-destructive/20 bg-destructive/5' : ''} hover:shadow-md transition-shadow`}>
+              <Card 
+                key={reminder.id} 
+                className={`glass-card transition-all duration-300 animate-slide-in-glass ${
+                  overdue && !reminder.completed ? 'border-destructive/40 bg-gradient-to-r from-destructive/10 to-destructive/5' : 
+                  reminder.completed ? 'border-success/30 bg-gradient-to-r from-success/10 to-success/5' :
+                  'hover:border-primary/50'
+                }`}
+                style={{animationDelay: `${index * 100}ms`}}
+              >
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className={`p-2 rounded-lg ${reminder.completed ? 'bg-success/10' : overdue ? 'bg-destructive/10' : 'bg-primary/10'}`}>
-                        <TypeIcon size={20} className={reminder.completed ? 'text-success' : overdue ? 'text-destructive' : 'text-primary'} />
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className={`p-3 rounded-xl ${
+                        reminder.completed ? 'bg-success/20' : 
+                        overdue ? 'bg-destructive/20 animate-pulse-gentle' : 
+                        'bg-primary/20'
+                      }`}>
+                        <TypeIcon size={24} className={
+                          reminder.completed ? 'text-success' : 
+                          overdue ? 'text-destructive' : 
+                          'text-primary'
+                        } />
                       </div>
                       
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-foreground">{reminder.title}</h3>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-bold text-xl text-foreground">{reminder.title}</h3>
                           {reminder.recurring && (
-                            <Badge variant="outline" className="text-xs">
-                              <Repeat size={10} className="mr-1" />
+                            <Badge variant="outline" className="glass-card border-accent/30 text-accent">
+                              <Repeat size={12} className="mr-1" />
                               {reminder.frequency}
                             </Badge>
                           )}
                           {reminder.completed && (
-                            <Badge variant="default" className="text-xs bg-success">
-                              <CheckCircle size={10} className="mr-1" />
+                            <Badge className="bg-success/20 text-success border-success/30">
+                              <CheckCircle size={12} className="mr-1" />
                               Complete
                             </Badge>
                           )}
                         </div>
                         
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {asset?.name || 'Unknown Asset'} • {typeConfig?.label}
+                        <p className="text-muted-foreground mb-3 text-lg">
+                          <span className="font-semibold">{asset?.name || 'Unknown Asset'}</span> • {typeConfig?.label}
                         </p>
                         
                         {reminder.description && (
-                          <p className="text-sm text-muted-foreground mb-2">{reminder.description}</p>
+                          <p className="text-muted-foreground mb-3 p-3 rounded-lg bg-gradient-to-r from-card/50 to-card/20 border border-border/30">
+                            {reminder.description}
+                          </p>
                         )}
                         
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar size={12} />
-                            {formatDate(reminder.dueDate)}
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-gradient-to-r from-card/50 to-card/20 border border-border/30">
+                            <Calendar size={16} className="text-primary" />
+                            <span className="font-medium">{formatDate(reminder.dueDate)}</span>
                           </div>
                           {!reminder.completed && (
-                            <div className={`flex items-center gap-1 ${overdue ? 'text-destructive' : daysUntil <= 7 ? 'text-accent' : ''}`}>
-                              <Clock size={12} />
-                              {overdue ? `${Math.abs(daysUntil)} days overdue` : `${daysUntil} days remaining`}
+                            <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+                              overdue ? 'bg-destructive/10 border-destructive/30 text-destructive' : 
+                              daysUntil <= 7 ? 'bg-accent/10 border-accent/30 text-accent' :
+                              'bg-gradient-to-r from-card/50 to-card/20 border-border/30'
+                            }`}>
+                              <Clock size={16} />
+                              <span className="font-medium">
+                                {overdue ? `${Math.abs(daysUntil)} days overdue` : `${daysUntil} days remaining`}
+                              </span>
                             </div>
                           )}
                           {reminder.completed && reminder.completedDate && (
-                            <div className="flex items-center gap-1 text-success">
-                              <CheckCircle size={12} />
-                              Completed {formatDate(reminder.completedDate)}
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-success/10 border-success/30 text-success">
+                              <CheckCircle size={16} />
+                              <span className="font-medium">Completed {formatDate(reminder.completedDate)}</span>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       {!reminder.completed && (
                         <Button
                           size="sm"
                           onClick={() => handleCompleteReminder(reminder.id)}
-                          className="bg-success hover:bg-success/90"
+                          className="bg-success hover:bg-success/80 text-success-foreground px-4 py-2"
                         >
-                          <CheckCircle size={14} className="mr-1" />
+                          <CheckCircle size={16} className="mr-2" />
                           Complete
                         </Button>
                       )}
@@ -490,15 +523,17 @@ export default function Reminders() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleEditReminder(reminder)}
+                        className="glass-card hover:bg-primary/10 hover:border-primary/50"
                       >
-                        <Edit3 size={14} />
+                        <Edit3 size={16} />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleDeleteReminder(reminder.id)}
+                        className="glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
                       </Button>
                     </div>
                   </div>

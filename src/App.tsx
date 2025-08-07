@@ -21,26 +21,32 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
 
   return (
-    <div className="min-h-screen bg-background font-['Inter']">
+    <div className="min-h-screen bg-background font-['Inter'] cyber-grid">
+      {/* Ambient Background Effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{animationDelay: '3s'}}></div>
+      </div>
+
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border/50 glass-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <TrendingUp size={24} className="text-primary-foreground" />
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center animate-glow-pulse">
+                <TrendingUp size={28} className="text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">AssetTracker</h1>
-                <p className="text-sm text-muted-foreground">Smart Asset Management</p>
+                <h1 className="text-2xl font-bold text-foreground neon-text">AssetTracker</h1>
+                <p className="text-sm text-muted-foreground">Next-Gen Asset Management</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
-                <Bell size={16} />
+              <Button variant="ghost" size="sm" className="glass-card hover:bg-primary/10">
+                <Bell size={18} />
               </Button>
-              <Button variant="ghost" size="sm">
-                <Gear size={16} />
+              <Button variant="ghost" size="sm" className="glass-card hover:bg-primary/10">
+                <Gear size={18} />
               </Button>
             </div>
           </div>
@@ -48,42 +54,42 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-8 relative z-10">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Navigation */}
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <House size={16} />
+          <TabsList className="grid w-full grid-cols-4 mb-8 glass-card">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+              <House size={18} />
               <span className="hidden sm:inline">Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger value="assets" className="flex items-center gap-2">
-              <Package size={16} />
+            <TabsTrigger value="assets" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+              <Package size={18} />
               <span className="hidden sm:inline">Assets</span>
             </TabsTrigger>
-            <TabsTrigger value="add" className="flex items-center gap-2">
-              <Plus size={16} />
+            <TabsTrigger value="add" className="flex items-center gap-2 data-[state=active]:bg-accent/20 data-[state=active]:text-accent">
+              <Plus size={18} />
               <span className="hidden sm:inline">Add Asset</span>
             </TabsTrigger>
-            <TabsTrigger value="reminders" className="flex items-center gap-2">
-              <Calendar size={16} />
+            <TabsTrigger value="reminders" className="flex items-center gap-2 data-[state=active]:bg-success/20 data-[state=active]:text-success">
+              <Calendar size={18} />
               <span className="hidden sm:inline">Reminders</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Tab Content */}
-          <TabsContent value="dashboard" className="space-y-6">
+          <TabsContent value="dashboard" className="space-y-8 animate-slide-in-glass">
             <Dashboard />
           </TabsContent>
 
-          <TabsContent value="assets" className="space-y-6">
+          <TabsContent value="assets" className="space-y-8 animate-slide-in-glass">
             <AssetList />
           </TabsContent>
 
-          <TabsContent value="add" className="space-y-6">
+          <TabsContent value="add" className="space-y-8 animate-slide-in-glass">
             <AddAsset />
           </TabsContent>
 
-          <TabsContent value="reminders" className="space-y-6">
+          <TabsContent value="reminders" className="space-y-8 animate-slide-in-glass">
             <Reminders />
           </TabsContent>
         </Tabs>

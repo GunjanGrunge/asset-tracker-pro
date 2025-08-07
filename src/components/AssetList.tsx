@@ -158,34 +158,35 @@ export default function AssetList() {
     return (
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="glass-card hover:bg-accent/10 hover:border-accent/50">
             <MoreHorizontal size={16} />
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="glass-card border-border/50">
           <DialogHeader>
-            <DialogTitle>Update Asset Status</DialogTitle>
+            <DialogTitle className="text-foreground text-xl">Update Asset Status</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Change the status of "{asset.name}"
+          <div className="space-y-6">
+            <p className="text-muted-foreground">
+              Modify status for <span className="font-medium text-foreground">"{asset.name}"</span>
             </p>
             
             <div className="space-y-2">
-              <Label>Sale Price (if selling)</Label>
+              <Label className="text-muted-foreground uppercase tracking-wider">Sale Price (if selling)</Label>
               <Input
                 type="number"
                 placeholder="Enter sale price"
                 value={salePrice}
                 onChange={(e) => setSalePrice(e.target.value)}
+                className="glass-card border-border/50 focus:border-primary"
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               <Button
                 onClick={() => handleStatusClick('sold')}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 glass-card hover:bg-success/10 hover:border-success/50 hover:text-success"
               >
                 <DollarSign size={16} />
                 Sold
@@ -193,7 +194,7 @@ export default function AssetList() {
               <Button
                 onClick={() => handleStatusClick('lost')}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
               >
                 <XCircle size={16} />
                 Lost
@@ -201,7 +202,7 @@ export default function AssetList() {
               <Button
                 onClick={() => handleStatusClick('broken')}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
               >
                 <AlertTriangle size={16} />
                 Broken
@@ -214,32 +215,32 @@ export default function AssetList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h2 className="text-3xl font-bold text-foreground">All Assets</h2>
-        <p className="text-muted-foreground">Manage and track your asset portfolio</p>
+      <div className="text-center">
+        <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Asset Registry</h2>
+        <p className="text-muted-foreground text-lg">Comprehensive portfolio management system</p>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="glass-card">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary" />
               <Input
                 placeholder="Search assets..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 glass-card border-border/50 focus:border-primary"
               />
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="glass-card border-border/50">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="glass-card border-border/50">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="sold">Sold</SelectItem>
@@ -249,10 +250,10 @@ export default function AssetList() {
             </Select>
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="glass-card border-border/50">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="glass-card border-border/50">
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category} value={category}>{category}</SelectItem>
@@ -261,8 +262,10 @@ export default function AssetList() {
             </Select>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Filter size={16} />
-              {filteredAssets.length} of {assets.length} assets
+              <div className="p-1 rounded bg-primary/10">
+                <Filter size={16} className="text-primary" />
+              </div>
+              <span className="font-medium">{filteredAssets.length}</span> of <span className="font-medium">{assets.length}</span> assets
             </div>
           </div>
         </CardContent>
@@ -270,88 +273,103 @@ export default function AssetList() {
 
       {/* Assets Grid/List */}
       {filteredAssets.length === 0 ? (
-        <Card>
-          <CardContent className="pt-12 pb-12 text-center">
-            <Package size={64} className="mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {assets.length === 0 ? 'No Assets Added' : 'No Assets Found'}
+        <Card className="glass-card">
+          <CardContent className="pt-16 pb-16 text-center">
+            <div className="p-6 rounded-full bg-muted/20 w-fit mx-auto mb-6">
+              <Package size={64} className="text-muted-foreground" />
+            </div>
+            <h3 className="text-2xl font-bold text-foreground mb-3">
+              {assets.length === 0 ? 'Asset Registry Empty' : 'No Assets Found'}
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               {assets.length === 0 
-                ? 'Start by adding your first asset to track your portfolio'
-                : 'Try adjusting your search or filter criteria'
+                ? 'Initialize your portfolio by deploying your first asset'
+                : 'Adjust search parameters or filter criteria'
               }
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAssets.map((asset) => {
+          {filteredAssets.map((asset, index) => {
             const config = statusConfig[asset.status]
             const StatusIcon = config.icon
             
             return (
-              <Card key={asset.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={asset.id} 
+                className="glass-card hover:border-primary/50 transition-all duration-300 animate-slide-in-glass"
+                style={{animationDelay: `${index * 100}ms`}}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{asset.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{asset.category}</p>
+                      <CardTitle className="text-xl text-foreground">{asset.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wider">{asset.category}</p>
                     </div>
-                    <Badge variant={config.color as any} className="flex items-center gap-1">
-                      <StatusIcon size={12} />
+                    <Badge 
+                      variant={config.color as any} 
+                      className={`flex items-center gap-2 px-3 py-1 ${
+                        asset.status === 'active' ? 'bg-success/20 text-success border-success/30' :
+                        asset.status === 'sold' ? 'bg-primary/20 text-primary border-primary/30' :
+                        'bg-destructive/20 text-destructive border-destructive/30'
+                      }`}
+                    >
+                      <StatusIcon size={14} />
                       {config.label}
                     </Badge>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Purchase Price</p>
-                      <p className="font-medium">{formatCurrency(asset.purchasePrice)}</p>
+                    <div className="p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider">Purchase Price</p>
+                      <p className="font-bold text-lg text-foreground">{formatCurrency(asset.purchasePrice)}</p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Purchase Date</p>
-                      <p className="font-medium">{formatDate(asset.purchaseDate)}</p>
+                    <div className="p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider">Purchase Date</p>
+                      <p className="font-semibold text-foreground">{formatDate(asset.purchaseDate)}</p>
                     </div>
                     {asset.model && (
-                      <div>
-                        <p className="text-muted-foreground">Model</p>
-                        <p className="font-medium">{asset.model}</p>
+                      <div className="col-span-2 p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                        <p className="text-muted-foreground text-xs uppercase tracking-wider">Model</p>
+                        <p className="font-semibold text-foreground">{asset.model}</p>
                       </div>
                     )}
                     {asset.salePrice && (
-                      <div>
-                        <p className="text-muted-foreground">Sale Price</p>
-                        <p className="font-medium">{formatCurrency(asset.salePrice)}</p>
+                      <div className="col-span-2 p-3 rounded-lg bg-gradient-to-br from-success/10 to-success/5 border border-success/30">
+                        <p className="text-success text-xs uppercase tracking-wider">Sale Price</p>
+                        <p className="font-bold text-lg text-success">{formatCurrency(asset.salePrice)}</p>
                       </div>
                     )}
                   </div>
 
                   {asset.warrantyExpiry && (
-                    <div className="pt-2 border-t">
+                    <div className="pt-3 border-t border-border/30">
                       <p className="text-xs text-muted-foreground">
-                        Warranty expires: {formatDate(asset.warrantyExpiry)}
+                        <span className="font-medium">Warranty expires:</span> {formatDate(asset.warrantyExpiry)}
                       </p>
                     </div>
                   )}
 
-                  <div className="flex justify-between pt-2">
+                  <div className="flex justify-between pt-3 border-t border-border/30">
                     <div className="flex gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => handleEditAsset(asset)}
+                        className="glass-card hover:bg-primary/10 hover:border-primary/50"
                       >
-                        <Edit3 size={14} />
+                        <Edit3 size={16} />
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => handleDeleteAsset(asset.id)}
+                        className="glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
                       </Button>
                     </div>
                     <StatusChangeButton asset={asset} />
@@ -365,45 +383,49 @@ export default function AssetList() {
 
       {/* Edit Asset Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md glass-card border-border/50">
           <DialogHeader>
-            <DialogTitle>Edit Asset</DialogTitle>
+            <DialogTitle className="text-foreground text-xl">Modify Asset Registry</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Asset Name</Label>
+              <Label className="text-muted-foreground uppercase tracking-wider">Asset Name</Label>
               <Input
                 value={editForm.name || ''}
                 onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                className="glass-card border-border/50 focus:border-primary"
               />
             </div>
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label className="text-muted-foreground uppercase tracking-wider">Category</Label>
               <Input
                 value={editForm.category || ''}
                 onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))}
+                className="glass-card border-border/50 focus:border-primary"
               />
             </div>
             <div className="space-y-2">
-              <Label>Purchase Price</Label>
+              <Label className="text-muted-foreground uppercase tracking-wider">Purchase Price</Label>
               <Input
                 type="number"
                 value={editForm.purchasePrice || ''}
                 onChange={(e) => setEditForm(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) }))}
+                className="glass-card border-border/50 focus:border-primary"
               />
             </div>
             <div className="space-y-2">
-              <Label>Model</Label>
+              <Label className="text-muted-foreground uppercase tracking-wider">Model</Label>
               <Input
                 value={editForm.model || ''}
                 onChange={(e) => setEditForm(prev => ({ ...prev, model: e.target.value }))}
+                className="glass-card border-border/50 focus:border-primary"
               />
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSaveEdit} className="flex-1">
-                Save Changes
+            <div className="flex gap-3 pt-4">
+              <Button onClick={handleSaveEdit} className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground">
+                Deploy Changes
               </Button>
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="glass-card border-border/50">
                 Cancel
               </Button>
             </div>

@@ -168,44 +168,48 @@ export default function AddAsset() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-8">
       {/* Page Header */}
-      <div>
-        <h2 className="text-3xl font-bold text-foreground">Add New Asset</h2>
-        <p className="text-muted-foreground">Add assets manually or upload a receipt for automatic parsing</p>
+      <div className="text-center">
+        <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Deploy New Asset</h2>
+        <p className="text-muted-foreground text-lg">Manual registration or AI-powered receipt parsing</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'manual' | 'receipt')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="manual" className="flex items-center gap-2">
-            <Edit3 size={16} />
+        <TabsList className="grid w-full grid-cols-2 glass-card">
+          <TabsTrigger value="manual" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+            <Edit3 size={18} />
             Manual Entry
           </TabsTrigger>
-          <TabsTrigger value="receipt" className="flex items-center gap-2">
-            <Upload size={16} />
+          <TabsTrigger value="receipt" className="flex items-center gap-2 data-[state=active]:bg-accent/20 data-[state=active]:text-accent">
+            <Upload size={18} />
             Upload Receipt
           </TabsTrigger>
         </TabsList>
 
         {/* Receipt Upload Tab */}
-        <TabsContent value="receipt" className="space-y-6">
-          <Card>
+        <TabsContent value="receipt" className="space-y-6 animate-slide-in-glass">
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText size={20} className="text-primary" />
-                Receipt Parser
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-accent/10">
+                  <FileText size={22} className="text-accent" />
+                </div>
+                <span className="text-foreground">AI Receipt Parser</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {!parsedData && !isProcessing ? (
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
-                  <Upload size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Upload Receipt</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Upload a PDF receipt and our AI will extract the purchase details automatically
+                <div className="border-2 border-dashed border-accent/30 rounded-xl p-12 text-center hover:border-accent/50 transition-all duration-300 glass-card">
+                  <div className="p-6 rounded-full bg-accent/10 w-fit mx-auto mb-6">
+                    <Upload size={64} className="text-accent" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground neon-text mb-3">Upload Receipt</h3>
+                  <p className="text-muted-foreground mb-6 text-lg">
+                    Upload a PDF receipt and our AI will extract purchase details automatically
                   </p>
                   <label htmlFor="receipt-upload">
-                    <Button asChild>
+                    <Button asChild className="bg-accent hover:bg-accent/80 text-accent-foreground px-8 py-3 text-lg rounded-xl">
                       <span className="cursor-pointer">Choose PDF File</span>
                     </Button>
                   </label>
@@ -218,30 +222,44 @@ export default function AddAsset() {
                   />
                 </div>
               ) : isProcessing ? (
-                <div className="text-center py-8">
-                  <Loader size={48} className="mx-auto text-primary mb-4 animate-spin" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Processing Receipt</h3>
-                  <p className="text-muted-foreground">Our AI is extracting purchase details...</p>
+                <div className="text-center py-12">
+                  <div className="p-6 rounded-full bg-primary/10 w-fit mx-auto mb-6 animate-glow-pulse">
+                    <Loader size={64} className="text-primary animate-spin" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground neon-text mb-3">AI Processing</h3>
+                  <p className="text-muted-foreground text-lg">Extracting purchase intelligence...</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-success">
-                    <Check size={20} />
-                    <span className="font-medium">Receipt processed successfully!</span>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 text-success p-4 rounded-xl bg-success/10 border border-success/30">
+                    <Check size={24} />
+                    <span className="font-bold text-lg">Receipt processed successfully!</span>
                   </div>
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <h4 className="font-medium text-foreground mb-2">Extracted Information:</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div><span className="text-muted-foreground">Product:</span> {parsedData?.name}</div>
-                      <div><span className="text-muted-foreground">Category:</span> {parsedData?.category}</div>
-                      <div><span className="text-muted-foreground">Price:</span> ${parsedData?.price}</div>
-                      <div><span className="text-muted-foreground">Date:</span> {parsedData?.date}</div>
+                  <div className="glass-card p-6 rounded-xl">
+                    <h4 className="font-bold text-foreground mb-4 text-lg">Extracted Intelligence:</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                        <span className="text-muted-foreground text-xs uppercase tracking-wider">Product</span>
+                        <div className="font-semibold text-foreground">{parsedData?.name}</div>
+                      </div>
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                        <span className="text-muted-foreground text-xs uppercase tracking-wider">Category</span>
+                        <div className="font-semibold text-foreground">{parsedData?.category}</div>
+                      </div>
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                        <span className="text-muted-foreground text-xs uppercase tracking-wider">Price</span>
+                        <div className="font-bold text-lg text-foreground">${parsedData?.price}</div>
+                      </div>
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                        <span className="text-muted-foreground text-xs uppercase tracking-wider">Date</span>
+                        <div className="font-semibold text-foreground">{parsedData?.date}</div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={() => setIsEditing(true)} variant="outline">
-                      <Edit3 size={16} className="mr-2" />
-                      Review & Edit
+                  <div className="flex gap-3">
+                    <Button onClick={() => setIsEditing(true)} variant="outline" className="glass-card hover:bg-primary/10 hover:border-primary/50">
+                      <Edit3 size={18} className="mr-2" />
+                      Review & Modify
                     </Button>
                     <Button 
                       onClick={() => {
@@ -249,8 +267,9 @@ export default function AddAsset() {
                         setActiveTab('manual')
                       }} 
                       variant="ghost"
+                      className="glass-card"
                     >
-                      Start Over
+                      Reset & Start Over
                     </Button>
                   </div>
                 </div>
@@ -260,36 +279,38 @@ export default function AddAsset() {
         </TabsContent>
 
         {/* Manual Entry Tab */}
-        <TabsContent value="manual" className="space-y-6">
+        <TabsContent value="manual" className="space-y-6 animate-slide-in-glass">
           {/* Show parsing status if data was parsed */}
           {parsedData && (
-            <Card className="border-success/20 bg-success/5">
+            <Card className="glass-card border-success/30 bg-gradient-to-r from-success/10 to-success/5">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-success mb-2">
-                  <Check size={16} />
-                  <span className="font-medium">Data imported from receipt</span>
+                <div className="flex items-center gap-3 text-success mb-2">
+                  <Check size={20} />
+                  <span className="font-bold text-lg">Data imported from receipt</span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Review and modify the details below before saving
+                <p className="text-muted-foreground">
+                  Review and modify the details below before deployment
                 </p>
               </CardContent>
             </Card>
           )}
 
           {/* Asset Form */}
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus size={20} className="text-primary" />
-                Asset Details
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Plus size={22} className="text-primary" />
+                </div>
+                <span className="text-foreground">Asset Registration</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Required Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm font-medium">
+                    <Label htmlFor="name" className="text-muted-foreground uppercase tracking-wider text-sm">
                       Asset Name <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -297,19 +318,20 @@ export default function AddAsset() {
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       placeholder="e.g., iPhone 15 Pro"
+                      className="glass-card border-border/50 focus:border-primary"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="category" className="text-sm font-medium">
+                    <Label htmlFor="category" className="text-muted-foreground uppercase tracking-wider text-sm">
                       Category <span className="text-destructive">*</span>
                     </Label>
                     <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="glass-card border-border/50">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="glass-card border-border/50">
                         {categories.map((category) => (
                           <SelectItem key={category} value={category}>
                             {category}
@@ -320,11 +342,11 @@ export default function AddAsset() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="price" className="text-sm font-medium">
+                    <Label htmlFor="price" className="text-muted-foreground uppercase tracking-wider text-sm">
                       Purchase Price <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
-                      <DollarSign size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <DollarSign size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-success" />
                       <Input
                         id="price"
                         type="number"
@@ -332,24 +354,24 @@ export default function AddAsset() {
                         value={formData.purchasePrice}
                         onChange={(e) => handleInputChange('purchasePrice', e.target.value)}
                         placeholder="0.00"
-                        className="pl-10"
+                        className="pl-10 glass-card border-border/50 focus:border-primary"
                         required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="date" className="text-sm font-medium">
+                    <Label htmlFor="date" className="text-muted-foreground uppercase tracking-wider text-sm">
                       Purchase Date <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
-                      <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <Calendar size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
                       <Input
                         id="date"
                         type="date"
                         value={formData.purchaseDate}
                         onChange={(e) => handleInputChange('purchaseDate', e.target.value)}
-                        className="pl-10"
+                        className="pl-10 glass-card border-border/50 focus:border-primary"
                         required
                       />
                     </div>
@@ -357,56 +379,63 @@ export default function AddAsset() {
                 </div>
 
                 {/* Optional Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="model" className="text-sm font-medium">Model/Version</Label>
-                    <Input
-                      id="model"
-                      value={formData.model}
-                      onChange={(e) => handleInputChange('model', e.target.value)}
-                      placeholder="e.g., A3102"
-                    />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground border-b border-border/30 pb-2">Optional Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="model" className="text-muted-foreground uppercase tracking-wider text-sm">Model/Version</Label>
+                      <Input
+                        id="model"
+                        value={formData.model}
+                        onChange={(e) => handleInputChange('model', e.target.value)}
+                        placeholder="e.g., A3102"
+                        className="glass-card border-border/50 focus:border-primary"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="serial" className="text-muted-foreground uppercase tracking-wider text-sm">Serial Number</Label>
+                      <Input
+                        id="serial"
+                        value={formData.serialNumber}
+                        onChange={(e) => handleInputChange('serialNumber', e.target.value)}
+                        placeholder="e.g., ABC123456789"
+                        className="glass-card border-border/50 focus:border-primary"
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="warranty" className="text-muted-foreground uppercase tracking-wider text-sm">Warranty Expiry</Label>
+                      <Input
+                        id="warranty"
+                        type="date"
+                        value={formData.warrantyExpiry}
+                        onChange={(e) => handleInputChange('warrantyExpiry', e.target.value)}
+                        className="glass-card border-border/50 focus:border-primary"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="serial" className="text-sm font-medium">Serial Number</Label>
-                    <Input
-                      id="serial"
-                      value={formData.serialNumber}
-                      onChange={(e) => handleInputChange('serialNumber', e.target.value)}
-                      placeholder="e.g., ABC123456789"
+                    <Label htmlFor="description" className="text-muted-foreground uppercase tracking-wider text-sm">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      placeholder="Additional notes about this asset..."
+                      rows={3}
+                      className="glass-card border-border/50 focus:border-primary"
                     />
                   </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="warranty" className="text-sm font-medium">Warranty Expiry</Label>
-                    <Input
-                      id="warranty"
-                      type="date"
-                      value={formData.warrantyExpiry}
-                      onChange={(e) => handleInputChange('warrantyExpiry', e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-medium">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="Additional notes about this asset..."
-                    rows={3}
-                  />
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1">
-                    <Plus size={16} className="mr-2" />
-                    Add Asset
+                <div className="flex gap-4 pt-6 border-t border-border/30">
+                  <Button type="submit" className="flex-1 bg-primary hover:bg-primary/80 text-primary-foreground px-8 py-3 text-lg rounded-xl">
+                    <Plus size={20} className="mr-2" />
+                    Deploy Asset
                   </Button>
-                  <Button type="button" variant="outline" onClick={resetForm}>
+                  <Button type="button" variant="outline" onClick={resetForm} className="glass-card border-border/50 px-6">
                     Clear Form
                   </Button>
                 </div>
