@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
-  House as Home, 
+  House, 
   Package, 
   Plus, 
   Bell, 
   TrendingUp, 
   Calendar,
   Upload,
-  MagnifyingGlass as Search,
-  Gear as Settings
+  MagnifyingGlass,
+  Gear
 } from '@phosphor-icons/react'
 import Dashboard from '@/components/Dashboard'
 import AssetList from '@/components/AssetList'
@@ -42,7 +42,7 @@ function App() {
                 <Bell size={16} />
               </Button>
               <Button variant="ghost" size="sm">
-                <Settings size={16} />
+                <Gear size={16} />
               </Button>
             </div>
           </div>
@@ -55,7 +55,7 @@ function App() {
           {/* Navigation */}
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Home size={16} />
+              <House size={16} />
               <span className="hidden sm:inline">Dashboard</span>
             </TabsTrigger>
             <TabsTrigger value="assets" className="flex items-center gap-2">
