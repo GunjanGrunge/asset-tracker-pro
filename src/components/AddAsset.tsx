@@ -171,7 +171,7 @@ export default function AddAsset() {
     <div className="max-w-3xl mx-auto space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Deploy New Asset</h2>
+        <h2 className="text-4xl font-bold text-foreground mb-2">Deploy New Asset</h2>
         <p className="text-muted-foreground text-lg">Manual registration or AI-powered receipt parsing</p>
       </div>
 
@@ -204,7 +204,7 @@ export default function AddAsset() {
                   <div className="p-6 rounded-full bg-accent/10 w-fit mx-auto mb-6">
                     <Upload size={64} className="text-accent" />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground neon-text mb-3">Upload Receipt</h3>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">Upload Receipt</h3>
                   <p className="text-muted-foreground mb-6 text-lg">
                     Upload a PDF receipt and our AI will extract purchase details automatically
                   </p>
@@ -226,7 +226,7 @@ export default function AddAsset() {
                   <div className="p-6 rounded-full bg-primary/10 w-fit mx-auto mb-6 animate-glow-pulse">
                     <Loader size={64} className="text-primary animate-spin" />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground neon-text mb-3">AI Processing</h3>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">AI Processing</h3>
                   <p className="text-muted-foreground text-lg">Extracting purchase intelligence...</p>
                 </div>
               ) : (

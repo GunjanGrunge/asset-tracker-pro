@@ -260,7 +260,7 @@ export default function Reminders() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Alert System</h2>
+          <h2 className="text-4xl font-bold text-foreground mb-2">Alert System</h2>
           <p className="text-muted-foreground text-lg">Intelligent maintenance and renewal scheduling</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

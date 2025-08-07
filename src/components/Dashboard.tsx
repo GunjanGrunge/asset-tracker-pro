@@ -86,7 +86,7 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Command Center</h2>
+        <h2 className="text-4xl font-bold text-foreground mb-2">Command Center</h2>
         <p className="text-muted-foreground text-lg">Real-time asset portfolio analytics</p>
       </div>
 
@@ -102,7 +102,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground neon-text">{totalAssets}</div>
+            <div className="text-3xl font-bold text-foreground">{totalAssets}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Active items in portfolio
             </p>
@@ -119,7 +119,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-success neon-text">{formatCurrency(totalWorth)}</div>
+            <div className="text-3xl font-bold text-success">{formatCurrency(totalWorth)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Combined purchase value
             </p>
@@ -136,7 +136,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-accent neon-text">{upcomingReminders.length}</div>
+            <div className="text-3xl font-bold text-accent">{upcomingReminders.length}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Due in next 7 days
             </p>
@@ -243,7 +243,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${overdue ? 'text-destructive neon-text' : 'text-foreground'}`}>
+                        <p className={`text-sm font-bold ${overdue ? 'text-destructive' : 'text-foreground'}`}>
                           {formatDate(reminder.dueDate)}
                         </p>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">{reminder.type}</p>
@@ -265,7 +265,7 @@ export default function Dashboard() {
               <div className="p-6 rounded-full bg-primary/10 w-fit mx-auto mb-6 animate-glow-pulse">
                 <TrendingUp size={64} className="text-primary" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground neon-text mb-3">Initialize AssetTracker</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-3">Initialize AssetTracker</h3>
               <p className="text-muted-foreground mb-6 text-lg">
                 Begin building your digital asset portfolio
               </p>

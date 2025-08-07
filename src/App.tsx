@@ -37,7 +37,7 @@ function App() {
                 <TrendingUp size={28} className="text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground neon-text">AssetTracker</h1>
+                <h1 className="text-2xl font-bold text-foreground">AssetTracker</h1>
                 <p className="text-sm text-muted-foreground">Next-Gen Asset Management</p>
               </div>
             </div>

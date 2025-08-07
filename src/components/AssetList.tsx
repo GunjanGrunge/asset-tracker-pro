@@ -218,7 +218,7 @@ export default function AssetList() {
     <div className="space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <h2 className="text-4xl font-bold text-foreground neon-text mb-2">Asset Registry</h2>
+        <h2 className="text-4xl font-bold text-foreground mb-2">Asset Registry</h2>
         <p className="text-muted-foreground text-lg">Comprehensive portfolio management system</p>
       </div>
 
