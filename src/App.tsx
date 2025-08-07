@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Home, 
+  House as Home, 
   Package, 
   Plus, 
   Bell, 
   TrendingUp, 
   Calendar,
   Upload,
-  Search,
-  Settings
+  MagnifyingGlass as Search,
+  Gear as Settings
 } from '@phosphor-icons/react'
 import Dashboard from '@/components/Dashboard'
 import AssetList from '@/components/AssetList'
