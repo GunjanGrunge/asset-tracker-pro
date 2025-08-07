@@ -9,7 +9,8 @@ import {
   DollarSign, 
   Calendar,
   AlertTriangle,
-  Clock
+  Clock,
+  Plus
 } from '@phosphor-icons/react'
 
 interface Asset {

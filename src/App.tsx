@@ -10,8 +10,6 @@ import {
   Bell, 
   TrendingUp, 
   Calendar,
-  Upload,
-  MagnifyingGlass,
   Gear
 } from '@phosphor-icons/react'
 import Dashboard from '@/components/Dashboard'
