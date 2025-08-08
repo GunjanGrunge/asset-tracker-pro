@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,21 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { toast } from 'sonner'
+import { apiRequest } from '@/lib/api'
 import { 
   Plus, 
   Calendar, 
   Bell, 
   Clock,
   CheckCircle,
-  AlertTriangle,
-  Repeat,
+  Warning,
+  ArrowsClockwise,
   Wrench,
   Car,
-  Zap,
+  Lightning,
   Shield,
-  Trash2,
-  Edit3
+  Trash,
+  PencilSimple
 } from '@phosphor-icons/react'
 
 interface Asset {
@@ -53,18 +53,42 @@ const reminderTypes = [
   { value: 'insurance', label: 'Insurance Renewal', icon: Shield },
   { value: 'warranty', label: 'Warranty Check', icon: CheckCircle },
   { value: 'cleaning', label: 'Cleaning', icon: Car },
-  { value: 'inspection', label: 'Inspection', icon: AlertTriangle },
-  { value: 'battery', label: 'Battery Replacement', icon: Zap },
+  { value: 'inspection', label: 'Inspection', icon: Warning },
+  { value: 'battery', label: 'Battery Replacement', icon: Lightning },
   { value: 'other', label: 'Other', icon: Bell }
 ]
 
 export default function Reminders() {
-  const [assets] = useKV<Asset[]>('assets', [])
+  const [assets, setAssets] = useKV<Asset[]>('assets', [])
   const [reminders, setReminders] = useKV<Reminder[]>('reminders', [])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null)
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'overdue'>('pending')
+
+  // Load data from backend on component mount
+  useEffect(() => {
+    loadAssetsFromAPI()
+    loadRemindersFromAPI()
+  }, [])
+
+  const loadAssetsFromAPI = async () => {
+    try {
+      const apiAssets = await apiRequest('/assets')
+      setAssets(apiAssets)
+    } catch (error) {
+      console.error('Failed to load assets:', error)
+    }
+  }
+
+  const loadRemindersFromAPI = async () => {
+    try {
+      const apiReminders = await apiRequest('/reminders')
+      setReminders(apiReminders)
+    } catch (error) {
+      console.error('Failed to load reminders:', error)
+    }
+  }
   
   const [formData, setFormData] = useState({
     assetId: '',
@@ -123,76 +147,126 @@ export default function Reminders() {
     }
   }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
 
-  const handleAddReminder = (e: React.FormEvent) => {
+  const handleAddReminder = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.assetId || !formData.title || !formData.dueDate || !formData.type) {
-      toast.error('Please fill in all required fields')
+    console.log('Form data:', formData)
+    console.log('Active assets:', activeAssets)
+    console.log('assetId type:', typeof formData.assetId)
+    console.log('assetId value:', formData.assetId)
+    console.log('assetId truthy:', !!formData.assetId)
+    
+    // Check each field individually
+    const missingFields: string[] = []
+    if (!formData.assetId || formData.assetId === '') missingFields.push('assetId')
+    if (!formData.title || formData.title.trim() === '') missingFields.push('title')
+    if (!formData.dueDate || formData.dueDate === '') missingFields.push('dueDate')
+    if (!formData.type || formData.type === '') missingFields.push('type')
+    
+    if (missingFields.length > 0) {
+      console.error('Please fill in all required fields')
+      console.error('Missing fields:', missingFields)
+      console.error('Current form data:', JSON.stringify(formData, null, 2))
       return
     }
 
-    const newReminder: Reminder = {
-      id: Date.now().toString(),
-      assetId: formData.assetId,
-      title: formData.title,
-      description: formData.description || undefined,
-      dueDate: formData.dueDate,
-      type: formData.type,
-      completed: false,
-      recurring: formData.recurring,
-      frequency: formData.recurring ? formData.frequency : undefined
-    }
+    try {
+      const reminderData = {
+        assetId: parseInt(formData.assetId),
+        title: formData.title,
+        description: formData.description || null,
+        dueDate: formData.dueDate,
+        type: formData.type,
+        recurring: formData.recurring,
+        frequency: formData.recurring ? formData.frequency : null
+      }
 
-    setReminders(current => [...current, newReminder])
-    toast.success('Reminder added successfully!')
-    resetForm()
-    setIsAddDialogOpen(false)
+      console.log('Sending reminder data to backend:', JSON.stringify(reminderData, null, 2))
+
+      // Save to backend
+      const savedReminder = await apiRequest('/reminders', {
+        method: 'POST',
+        body: JSON.stringify(reminderData)
+      })
+
+      console.log('Backend response:', savedReminder)
+
+      // Update local state
+      setReminders(current => [...current, savedReminder])
+      console.log('Reminder added successfully!')
+      resetForm()
+      setIsAddDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to add reminder:', error)
+    }
   }
 
-  const handleCompleteReminder = (reminderId: string) => {
-    setReminders(current =>
-      current.map(reminder => {
-        if (reminder.id === reminderId) {
-          const updated = { 
-            ...reminder, 
-            completed: true, 
-            completedDate: new Date().toISOString().split('T')[0] 
-          }
-          
-          // If recurring, create next reminder
-          if (reminder.recurring && reminder.frequency) {
-            const nextDate = new Date(reminder.dueDate)
-            switch (reminder.frequency) {
-              case 'monthly':
-                nextDate.setMonth(nextDate.getMonth() + 1)
-                break
-              case 'quarterly':
-                nextDate.setMonth(nextDate.getMonth() + 3)
-                break
-              case 'yearly':
-                nextDate.setFullYear(nextDate.getFullYear() + 1)
-                break
-            }
-            
-            const nextReminder: Reminder = {
-              ...reminder,
-              id: Date.now().toString() + '_next',
-              dueDate: nextDate.toISOString().split('T')[0],
-              completed: false,
-              completedDate: undefined
-            }
-            
-            setTimeout(() => {
-              setReminders(prev => [...prev, nextReminder])
-            }, 100)
-          }
-          
-          return updated
-        }
-        return reminder
+  const handleCompleteReminder = async (reminderId: string) => {
+    try {
+      // Update in backend using dedicated complete endpoint
+      const completedReminder = await apiRequest(`/reminders/${reminderId}/complete`, {
+        method: 'POST'
       })
-    )
-    toast.success('Reminder marked as completed!')
+
+      console.log('Completed reminder response:', completedReminder)
+
+      // Update local state
+      setReminders(current =>
+        current.map(reminder => {
+          if (reminder.id === reminderId) {
+            const updated = { 
+              ...reminder, 
+              completed: true, 
+              completedDate: new Date().toISOString().split('T')[0] 
+            }
+            
+            // If recurring, create next reminder
+            if (reminder.recurring && reminder.frequency) {
+              const nextDate = new Date(reminder.dueDate)
+              switch (reminder.frequency) {
+                case 'monthly':
+                  nextDate.setMonth(nextDate.getMonth() + 1)
+                  break
+                case 'quarterly':
+                  nextDate.setMonth(nextDate.getMonth() + 3)
+                  break
+                case 'yearly':
+                  nextDate.setFullYear(nextDate.getFullYear() + 1)
+                  break
+              }
+
+              // Create next reminder automatically
+              const nextReminder = {
+                assetId: parseInt(reminder.assetId),
+                title: reminder.title,
+                description: reminder.description || null,
+                dueDate: nextDate.toISOString().split('T')[0],
+                type: reminder.type,
+                recurring: true,
+                frequency: reminder.frequency
+              }
+
+              // Add next reminder to backend
+              apiRequest('/reminders', {
+                method: 'POST',
+                body: JSON.stringify(nextReminder)
+              }).then(savedNextReminder => {
+                setReminders(current => [...current, savedNextReminder])
+              }).catch(error => {
+                console.error('Failed to create next recurring reminder:', error)
+              })
+            }
+            
+            return updated
+          }
+          return reminder
+        })
+      )
+      
+      console.log('Reminder completed!')
+    } catch (error) {
+      console.error('Failed to complete reminder:', error)
+    }
   }
 
   const handleEditReminder = (reminder: Reminder) => {
@@ -213,7 +287,7 @@ export default function Reminders() {
     e.preventDefault()
     
     if (!editingReminder || !formData.title || !formData.dueDate || !formData.type) {
-      toast.error('Please fill in all required fields')
+      console.error('Please fill in all required fields')
       return
     }
 
@@ -233,15 +307,25 @@ export default function Reminders() {
       )
     )
     
-    toast.success('Reminder updated successfully!')
+    console.log('Reminder updated successfully!')
     setIsEditDialogOpen(false)
     setEditingReminder(null)
     resetForm()
   }
 
-  const handleDeleteReminder = (reminderId: string) => {
-    setReminders(current => current.filter(reminder => reminder.id !== reminderId))
-    toast.success('Reminder deleted successfully!')
+  const handleDeleteReminder = async (reminderId: string) => {
+    try {
+      // Delete from backend
+      await apiRequest(`/reminders/${reminderId}`, {
+        method: 'DELETE'
+      })
+
+      // Update local state
+      setReminders(current => current.filter(reminder => reminder.id !== reminderId))
+      console.log('Reminder deleted successfully!')
+    } catch (error) {
+      console.error('Failed to delete reminder:', error)
+    }
   }
 
   const getFilterCounts = () => {
@@ -277,13 +361,16 @@ export default function Reminders() {
             <form onSubmit={handleAddReminder} className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-muted-foreground uppercase tracking-wider">Asset <span className="text-destructive">*</span></Label>
-                <Select value={formData.assetId} onValueChange={(value) => setFormData(prev => ({ ...prev, assetId: value }))}>
+                <Select value={formData.assetId} onValueChange={(value) => {
+                  console.log('Asset selected:', value, typeof value)
+                  setFormData(prev => ({ ...prev, assetId: value }))
+                }}>
                   <SelectTrigger className="glass-card border-border/50">
                     <SelectValue placeholder="Select asset" />
                   </SelectTrigger>
                   <SelectContent className="glass-card border-border/50">
                     {activeAssets.map(asset => (
-                      <SelectItem key={asset.id} value={asset.id}>
+                      <SelectItem key={asset.id} value={asset.id.toString()}>
                         {asset.name}
                       </SelectItem>
                     ))}
@@ -319,12 +406,15 @@ export default function Reminders() {
 
               <div className="space-y-2">
                 <Label className="text-muted-foreground uppercase tracking-wider">Due Date <span className="text-destructive">*</span></Label>
-                <Input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                  className="glass-card border-border/50 focus:border-primary"
-                />
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                    className="glass-card border-border/50 focus:border-primary text-green-600"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -343,6 +433,7 @@ export default function Reminders() {
                   id="recurring"
                   checked={formData.recurring}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, recurring: !!checked }))}
+                  className="border-2 border-orange-400 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:text-white bg-white/10 backdrop-blur-sm"
                 />
                 <Label htmlFor="recurring" className="text-muted-foreground">Recurring reminder</Label>
               </div>
@@ -459,7 +550,7 @@ export default function Reminders() {
                           <h3 className="font-bold text-xl text-foreground">{reminder.title}</h3>
                           {reminder.recurring && (
                             <Badge variant="outline" className="glass-card border-accent/30 text-accent">
-                              <Repeat size={12} className="mr-1" />
+                              <ArrowsClockwise size={12} className="mr-1" />
                               {reminder.frequency}
                             </Badge>
                           )}
@@ -525,7 +616,7 @@ export default function Reminders() {
                         onClick={() => handleEditReminder(reminder)}
                         className="glass-card hover:bg-primary/10 hover:border-primary/50"
                       >
-                        <Edit3 size={16} />
+                        <PencilSimple size={16} />
                       </Button>
                       <Button
                         size="sm"
@@ -533,7 +624,7 @@ export default function Reminders() {
                         onClick={() => handleDeleteReminder(reminder.id)}
                         className="glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
                       >
-                        <Trash2 size={16} />
+                        <Trash size={16} />
                       </Button>
                     </div>
                   </div>

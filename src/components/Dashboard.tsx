@@ -3,12 +3,13 @@ import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { formatCurrency, formatDate, apiRequest } from '@/lib/api'
 import { 
-  TrendingUp, 
+  TrendUp, 
   Package, 
-  DollarSign, 
+  CurrencyDollar, 
   Calendar,
-  AlertTriangle,
+  Warning,
   Clock,
   Plus
 } from '@phosphor-icons/react'
@@ -34,19 +35,58 @@ interface Reminder {
 }
 
 export default function Dashboard() {
-  const [assets] = useKV<Asset[]>('assets', [])
-  const [reminders] = useKV<Reminder[]>('reminders', [])
+  const [assets, setAssets] = useKV<Asset[]>('assets', [])
+  const [reminders, setReminders] = useKV<Reminder[]>('reminders', [])
   const [animateMetrics, setAnimateMetrics] = useState(false)
 
+  // Load data from backend on component mount
   useEffect(() => {
+    loadAssetsFromAPI()
+    loadRemindersFromAPI()
     const timer = setTimeout(() => setAnimateMetrics(true), 100)
     return () => clearTimeout(timer)
   }, [])
 
+  const loadAssetsFromAPI = async () => {
+    try {
+      const apiAssets = await apiRequest('/assets')
+      console.log('Loaded assets from API:', apiAssets)
+      setAssets(apiAssets)
+    } catch (error) {
+      console.error('Failed to load assets:', error)
+      // Continue with local storage data if API fails
+    }
+  }
+
+  // Refresh assets data every 30 seconds to keep in sync
+  useEffect(() => {
+    const interval = setInterval(loadAssetsFromAPI, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const loadRemindersFromAPI = async () => {
+    try {
+      const apiReminders = await apiRequest('/reminders')
+      setReminders(apiReminders)
+    } catch (error) {
+      console.error('Failed to load reminders:', error)
+      // Continue with local storage data if API fails
+    }
+  }
+
   // Calculate metrics
   const activeAssets = assets.filter(asset => asset.status === 'active')
   const totalAssets = activeAssets.length
-  const totalWorth = activeAssets.reduce((sum, asset) => sum + asset.purchasePrice, 0)
+  const totalWorth = activeAssets.reduce((sum, asset) => {
+    // Handle both number and string formats from database
+    let price = asset.purchasePrice
+    if (typeof price === 'string') {
+      price = parseFloat(price.replace(/[^0-9.-]+/g, '')) // Remove currency symbols
+    }
+    return sum + (isNaN(price) ? 0 : price)
+  }, 0)
+
+  console.log('Dashboard metrics:', { totalAssets, totalWorth, activeAssets })
   
   // Recent assets (last 5 added)
   const recentAssets = assets
@@ -60,23 +100,6 @@ export default function Dashboard() {
     .filter(reminder => !reminder.completed && new Date(reminder.dueDate) <= weekFromNow)
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 5)
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
 
   const isOverdue = (dateString: string) => {
     return new Date(dateString) < now
@@ -115,7 +138,7 @@ export default function Dashboard() {
               Total Worth
             </CardTitle>
             <div className="p-2 rounded-lg bg-success/10">
-              <DollarSign className="h-5 w-5 text-success" />
+              <CurrencyDollar className="h-5 w-5 text-success" />
             </div>
           </CardHeader>
           <CardContent>
@@ -151,7 +174,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
-                <TrendingUp size={22} className="text-primary" />
+                <TrendUp size={22} className="text-primary" />
               </div>
               <span className="text-foreground">Recent Acquisitions</span>
             </CardTitle>
@@ -234,7 +257,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-4">
                         {overdue && (
                           <div className="p-1 rounded-full bg-destructive/20">
-                            <AlertTriangle size={18} className="text-destructive" />
+                            <Warning size={18} className="text-destructive" />
                           </div>
                         )}
                         <div>
@@ -263,7 +286,7 @@ export default function Dashboard() {
           <CardContent className="pt-8">
             <div className="text-center">
               <div className="p-6 rounded-full bg-primary/10 w-fit mx-auto mb-6 animate-glow-pulse">
-                <TrendingUp size={64} className="text-primary" />
+                <TrendUp size={64} className="text-primary" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-3">Initialize AssetTracker</h3>
               <p className="text-muted-foreground mb-6 text-lg">

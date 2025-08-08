@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,20 +6,24 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Label } from '@/components/ui/label'
-import { toast } from 'sonner'
+import DocumentViewer from '@/components/DocumentViewer'
+import { formatCurrency, formatDate, apiRequest } from '@/lib/api'
 import { 
-  Search, 
+  MagnifyingGlass, 
   Package, 
-  DollarSign, 
+  CurrencyDollar, 
   Calendar,
-  Edit3,
-  Trash2,
+  PencilSimple,
+  Trash,
   CheckCircle,
   XCircle,
-  AlertTriangle,
-  Filter,
-  MoreHorizontal
+  Warning,
+  Funnel,
+  DotsThree,
+  FileText,
+  Eye
 } from '@phosphor-icons/react'
 
 interface Asset {
@@ -35,13 +39,23 @@ interface Asset {
   warrantyExpiry?: string
   salePrice?: number
   saleDate?: string
+  documents?: AssetDocument[]
+}
+
+interface AssetDocument {
+  id: string
+  type: 'receipt' | 'invoice' | 'warranty' | 'manual' | 'other'
+  filename: string
+  originalName: string
+  url: string
+  uploadDate: string
 }
 
 const statusConfig = {
   active: { color: 'default', icon: CheckCircle, label: 'Active' },
-  sold: { color: 'secondary', icon: DollarSign, label: 'Sold' },
+  sold: { color: 'secondary', icon: CurrencyDollar, label: 'Sold' },
   lost: { color: 'destructive', icon: XCircle, label: 'Lost' },
-  broken: { color: 'destructive', icon: AlertTriangle, label: 'Broken' }
+  broken: { color: 'destructive', icon: Warning, label: 'Broken' }
 }
 
 export default function AssetList() {
@@ -51,7 +65,40 @@ export default function AssetList() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false)
+  const [isAssetDetailOpen, setIsAssetDetailOpen] = useState(false)
+  const [selectedDocuments, setSelectedDocuments] = useState<AssetDocument[]>([])
   const [editForm, setEditForm] = useState<Partial<Asset>>({})
+  
+  // Document viewer state
+  const [isDocumentViewerOpen, setIsDocumentViewerOpen] = useState(false)
+  const [selectedDocument, setSelectedDocument] = useState<{
+    id: string
+    name: string
+    type: string
+  } | null>(null)
+
+  // Load assets from backend on component mount
+  useEffect(() => {
+    loadAssetsFromAPI()
+  }, [])
+
+  const loadAssetsFromAPI = async () => {
+    try {
+      const apiAssets = await apiRequest('/assets')
+      console.log('Loaded assets from API for AssetList:', apiAssets)
+      setAssets(apiAssets)
+    } catch (error) {
+      console.error('Failed to load assets in AssetList:', error)
+      // Continue with local storage data if API fails
+    }
+  }
+
+  // Refresh assets data every 30 seconds to keep in sync
+  useEffect(() => {
+    const interval = setInterval(loadAssetsFromAPI, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Get unique categories
   const categories = Array.from(new Set(assets.map(asset => asset.category)))
@@ -69,23 +116,6 @@ export default function AssetList() {
     return matchesSearch && matchesStatus && matchesCategory
   })
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
-
   const handleStatusChange = (assetId: string, newStatus: Asset['status'], salePrice?: number) => {
     setAssets(current => 
       current.map(asset => {
@@ -100,7 +130,7 @@ export default function AssetList() {
         return asset
       })
     )
-    toast.success(`Asset marked as ${newStatus}`)
+    // toast.success(`Asset marked as ${newStatus}`)
   }
 
   const handleEditAsset = (asset: Asset) => {
@@ -109,27 +139,86 @@ export default function AssetList() {
     setIsEditDialogOpen(true)
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!selectedAsset || !editForm.name || !editForm.category) {
-      toast.error('Please fill in required fields')
+      // toast.error('Please fill in required fields')
       return
     }
 
-    setAssets(current =>
-      current.map(asset =>
-        asset.id === selectedAsset.id ? { ...asset, ...editForm } : asset
+    // Convert purchasePrice to number and validate
+    const purchasePrice = typeof editForm.purchasePrice === 'string' 
+      ? parseFloat(editForm.purchasePrice) 
+      : editForm.purchasePrice || 0
+
+    if (isNaN(purchasePrice) || purchasePrice <= 0) {
+      // toast.error('Please enter a valid purchase price')
+      return
+    }
+
+    const updatedAsset = {
+      ...selectedAsset,
+      ...editForm,
+      purchasePrice: purchasePrice
+    }
+
+    try {
+      // Update in backend
+      await apiRequest(`/assets/${selectedAsset.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedAsset)
+      })
+
+      // Update local state
+      setAssets(current =>
+        current.map(asset =>
+          asset.id === selectedAsset.id ? updatedAsset : asset
+        )
       )
-    )
-    
-    toast.success('Asset updated successfully')
-    setIsEditDialogOpen(false)
-    setSelectedAsset(null)
-    setEditForm({})
+      
+      // toast.success('Asset updated successfully!')
+      setIsEditDialogOpen(false)
+      setSelectedAsset(null)
+      setEditForm({})
+    } catch (error) {
+      console.error('Failed to update asset:', error)
+      // toast.error('Failed to update asset. Please try again.')
+    }
   }
 
-  const handleDeleteAsset = (assetId: string) => {
-    setAssets(current => current.filter(asset => asset.id !== assetId))
-    toast.success('Asset deleted successfully')
+  const handleDeleteAsset = async (assetId: string) => {
+    try {
+      // Delete from backend
+      await apiRequest(`/assets/${assetId}`, {
+        method: 'DELETE'
+      })
+      
+      // Update local state
+      setAssets(current => current.filter(asset => asset.id !== assetId))
+      //       // toast.success('Asset deleted successfully!')
+    } catch (error) {
+      console.error('Failed to delete asset:', error)
+      // toast.error('Failed to delete asset. Please try again.')
+    }
+  }
+
+  const handleViewDocuments = (asset: Asset) => {
+    setSelectedAsset(asset)
+    setSelectedDocuments(asset.documents || [])
+    setIsDocumentDialogOpen(true)
+  }
+
+  const handleViewDocument = (document: AssetDocument) => {
+    setSelectedDocument({
+      id: document.id,
+      name: document.originalName,
+      type: document.type
+    })
+    setIsDocumentViewerOpen(true)
+  }
+
+  const handleAssetClick = (asset: Asset) => {
+    setSelectedAsset(asset)
+    setIsAssetDetailOpen(true)
   }
 
   const StatusChangeButton = ({ asset }: { asset: Asset }) => {
@@ -140,7 +229,7 @@ export default function AssetList() {
       if (status === 'sold') {
         const price = parseFloat(salePrice)
         if (!price || price <= 0) {
-          toast.error('Please enter a valid sale price')
+          // toast.error('Please enter a valid sale price')
           return
         }
         handleStatusChange(asset.id, status, price)
@@ -158,8 +247,13 @@ export default function AssetList() {
     return (
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="glass-card hover:bg-accent/10 hover:border-accent/50">
-            <MoreHorizontal size={16} />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={(e) => e.stopPropagation()}
+            className="glass-card hover:bg-accent/10 hover:border-accent/50"
+          >
+            <DotsThree size={16} />
           </Button>
         </DialogTrigger>
         <DialogContent className="glass-card border-border/50">
@@ -188,7 +282,7 @@ export default function AssetList() {
                 variant="outline"
                 className="flex items-center gap-2 glass-card hover:bg-success/10 hover:border-success/50 hover:text-success"
               >
-                <DollarSign size={16} />
+                <CurrencyDollar size={16} />
                 Sold
               </Button>
               <Button
@@ -204,7 +298,7 @@ export default function AssetList() {
                 variant="outline"
                 className="flex items-center gap-2 glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
               >
-                <AlertTriangle size={16} />
+                <Warning size={16} />
                 Broken
               </Button>
             </div>
@@ -227,7 +321,7 @@ export default function AssetList() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary" />
+              <MagnifyingGlass size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary" />
               <Input
                 placeholder="Search assets..."
                 value={searchTerm}
@@ -263,7 +357,7 @@ export default function AssetList() {
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="p-1 rounded bg-primary/10">
-                <Filter size={16} className="text-primary" />
+                <Funnel size={16} className="text-primary" />
               </div>
               <span className="font-medium">{filteredAssets.length}</span> of <span className="font-medium">{assets.length}</span> assets
             </div>
@@ -298,8 +392,9 @@ export default function AssetList() {
             return (
               <Card 
                 key={asset.id} 
-                className="glass-card hover:border-primary/50 transition-all duration-300 animate-slide-in-glass"
+                className="glass-card hover:border-primary/50 transition-all duration-300 animate-slide-in-glass cursor-pointer"
                 style={{animationDelay: `${index * 100}ms`}}
+                onClick={() => handleAssetClick(asset)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -358,19 +453,59 @@ export default function AssetList() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleEditAsset(asset)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleEditAsset(asset)
+                        }}
                         className="glass-card hover:bg-primary/10 hover:border-primary/50"
                       >
-                        <Edit3 size={16} />
+                        <PencilSimple size={16} />
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDeleteAsset(asset.id)}
-                        className="glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
+                      {asset.documents && asset.documents.length > 0 && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleViewDocuments(asset)
+                          }}
+                          className="glass-card hover:bg-accent/10 hover:border-accent/50"
+                        >
+                          <FileText size={16} />
+                        </Button>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => e.stopPropagation()}
+                            className="glass-card hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive"
+                          >
+                            <Trash size={16} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="glass-card border-border/50" onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-foreground">Delete Asset</AlertDialogTitle>
+                            <AlertDialogDescription className="text-muted-foreground">
+                              Are you sure you want to delete "{asset.name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="glass-card border-border/50">Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteAsset(asset.id)
+                              }}
+                              className="bg-destructive hover:bg-destructive/80 text-destructive-foreground"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                     <StatusChangeButton asset={asset} />
                   </div>
@@ -409,7 +544,7 @@ export default function AssetList() {
               <Input
                 type="number"
                 value={editForm.purchasePrice || ''}
-                onChange={(e) => setEditForm(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) }))}
+                onChange={(e) => setEditForm(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
                 className="glass-card border-border/50 focus:border-primary"
               />
             </div>
@@ -432,6 +567,195 @@ export default function AssetList() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Document Viewer Dialog */}
+      <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>
+        <DialogContent className="max-w-2xl glass-card border-border/50">
+          <DialogHeader>
+            <DialogTitle className="text-foreground text-xl">Asset Documents</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedDocuments.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText size={48} className="mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No documents uploaded for this asset</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {selectedDocuments.map((document) => (
+                  <div key={document.id} className="flex items-center justify-between p-4 rounded-lg glass-card border border-border/30">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText size={20} className="text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{document.originalName}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{document.type}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(document.uploadDate)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDocument(document)}
+                        className="glass-card hover:bg-primary/10 hover:border-primary/50"
+                      >
+                        <Eye size={16} />
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Asset Detail Dialog */}
+      {selectedAsset && (
+        <Dialog open={isAssetDetailOpen} onOpenChange={setIsAssetDetailOpen}>
+          <DialogContent className="max-w-4xl glass-card border-border/50">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-foreground flex items-center gap-3">
+                <Package size={24} className="text-primary" />
+                {selectedAsset.name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Asset Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Category</p>
+                  <p className="font-semibold text-lg text-foreground">{selectedAsset.category}</p>
+                </div>
+                <div className="p-4 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Purchase Price</p>
+                  <p className="font-bold text-xl text-foreground">{formatCurrency(selectedAsset.purchasePrice)}</p>
+                </div>
+                <div className="p-4 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Status</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-sm">
+                      {statusConfig[selectedAsset.status].label}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Asset Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Asset Information</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-muted-foreground text-sm">Purchase Date</p>
+                      <p className="text-foreground">{formatDate(selectedAsset.purchaseDate)}</p>
+                    </div>
+                    {selectedAsset.model && (
+                      <div>
+                        <p className="text-muted-foreground text-sm">Model</p>
+                        <p className="text-foreground">{selectedAsset.model}</p>
+                      </div>
+                    )}
+                    {selectedAsset.serialNumber && (
+                      <div>
+                        <p className="text-muted-foreground text-sm">Serial Number</p>
+                        <p className="text-foreground font-mono">{selectedAsset.serialNumber}</p>
+                      </div>
+                    )}
+                    {selectedAsset.warrantyExpiry && (
+                      <div>
+                        <p className="text-muted-foreground text-sm">Warranty Expiry</p>
+                        <p className="text-foreground">{formatDate(selectedAsset.warrantyExpiry)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Documents</h3>
+                  {selectedAsset.documents && selectedAsset.documents.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedAsset.documents.map((document) => (
+                        <div key={document.id} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-br from-card/50 to-card/20 border border-border/30">
+                          <div className="flex items-center gap-3">
+                            <FileText size={16} className="text-muted-foreground" />
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{document.originalName}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{document.type}</p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDocument(document)}
+                            className="glass-card hover:bg-primary/10 hover:border-primary/50"
+                          >
+                            <Eye size={16} />
+                            View
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No documents attached</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedAsset.description && (
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Description</h3>
+                  <p className="text-muted-foreground">{selectedAsset.description}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-border/30">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditForm(selectedAsset)
+                    setIsAssetDetailOpen(false)
+                    setIsEditDialogOpen(true)
+                  }}
+                  className="glass-card hover:bg-primary/10 hover:border-primary/50"
+                >
+                  <PencilSimple size={16} className="mr-2" />
+                  Edit Asset
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAssetDetailOpen(false)}
+                  className="glass-card"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Document Viewer Modal */}
+      {selectedDocument && (
+        <DocumentViewer
+          isOpen={isDocumentViewerOpen}
+          onClose={() => {
+            setIsDocumentViewerOpen(false)
+            setSelectedDocument(null)
+          }}
+          documentId={selectedDocument.id}
+          documentName={selectedDocument.name}
+          documentType={selectedDocument.type}
+        />
+      )}
     </div>
   )
 }
