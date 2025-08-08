@@ -119,13 +119,15 @@ CMD ["node", "backend/server.js"]
 
 1. **Frontend Build**: React app builds to static files
 2. **API Functions**: Node.js backend becomes serverless functions at `/api/*`
-3. **AI Service**: Python FastAPI becomes serverless functions at `/python-ai/*`
-4. **Environment**: All your AWS, Firebase, and database connections work in production
+3. **AI Processing**: AWS Bedrock integration handled by Node.js backend (more reliable than Python serverless)
+4. **Python Health Check**: Simple Python functions at `/python-ai/api/*` (optional)
+5. **Environment**: All your AWS, Firebase, and database connections work in production
 
 ## 🚀 **Your Live URLs After Deployment:**
 - **App**: `https://asset-tracker-pro-[hash].vercel.app`
-- **API**: `https://asset-tracker-pro-[hash].vercel.app/api/health`
-- **AI Service**: `https://asset-tracker-pro-[hash].vercel.app/python-ai/health`
+- **API Health**: `https://asset-tracker-pro-[hash].vercel.app/api/health`
+- **AI Processing**: `https://asset-tracker-pro-[hash].vercel.app/api/ai/parse-receipt`
+- **Python Health**: `https://asset-tracker-pro-[hash].vercel.app/python-ai/api/health`
 
 Your AI service will now be included in the deployment! 🚀
 

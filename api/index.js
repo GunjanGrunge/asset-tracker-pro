@@ -12,6 +12,7 @@ import authRoutes from '../backend/routes/auth.js';
 import assetRoutes from '../backend/routes/assets.js';
 import reminderRoutes from '../backend/routes/reminders.js';
 import receiptRoutes from '../backend/routes/receipts.js';
+import aiRoutes from '../backend/routes/ai.js';
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/receipts', receiptRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

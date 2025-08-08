@@ -13,18 +13,22 @@
       "use": "@vercel/node"
     },
     {
-      "src": "python-ai/requirements.txt",
+      "src": "python-ai/api/*.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/ai/(.*)",
-      "dest": "/python-ai/simple_main.py"
+      "dest": "/api/index.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/python-ai/api/(.*)",
+      "dest": "/python-ai/api/$1.py"
     },
     {
       "src": "/(.*)",

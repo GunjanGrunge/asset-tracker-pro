@@ -1,0 +1,14 @@
+llama-index
+llama-index-llms-bedrock
+llama-index-embeddings-bedrock
+boto3
+PyMuPDF
+Pillow
+python-dotenv
+fastapi
+uvicorn
+python-multipart
+requests
+sqlalchemy
+psycopg2-binary
+mangum
