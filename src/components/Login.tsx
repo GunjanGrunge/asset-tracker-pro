@@ -3,13 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/hooks/useAuth'
 import { 
   Eye, 
   EyeSlash, 
-  GoogleLogo, 
-  ShieldCheck, 
   User,
   Envelope,
   Lock,
@@ -19,14 +16,11 @@ import {
 import logoImage from '@/logo/logo.png'
 
 export default function Login() {
-  const { signIn, signUp, signInWithGoogle, loading } = useAuth()
-  const [isSignUp, setIsSignUp] = useState(false)
+  const { signIn, loading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    confirmPassword: '',
-    displayName: ''
+    password: ''
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,24 +33,14 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (isSignUp && formData.password !== formData.confirmPassword) {
-      console.error('Passwords do not match')
-      return
-    }
-
     if (formData.password.length < 6) {
       console.error('Password must be at least 6 characters')
       return
     }
     
     try {
-      if (isSignUp) {
-        await signUp(formData.email, formData.password, formData.displayName)
-        console.log('Account created successfully!')
-      } else {
-        await signIn(formData.email, formData.password)
-        console.log('Welcome back!')
-      }
+      await signIn(formData.email, formData.password)
+      console.log('Welcome back!')
     } catch (error: any) {
       console.error('Authentication error:', error)
       
@@ -71,12 +55,6 @@ export default function Login() {
         case 'auth/wrong-password':
           errorMessage = 'Incorrect password'
           break
-        case 'auth/email-already-in-use':
-          errorMessage = 'Email is already registered'
-          break
-        case 'auth/weak-password':
-          errorMessage = 'Password is too weak'
-          break
         case 'auth/invalid-email':
           errorMessage = 'Invalid email address'
           break
@@ -88,15 +66,6 @@ export default function Login() {
       }
       
       console.error(errorMessage)
-    }
-  }
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle()
-      console.log('Welcome!')
-    } catch (error: any) {
-      console.error('Google sign in error:', error)
     }
   }
 
@@ -130,58 +99,21 @@ export default function Login() {
               AssetTracker
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              {isSignUp ? 'Initialize your account' : 'Access your digital portfolio'}
+              Access your digital portfolio
             </p>
+            {/* Limited Access Notice */}
+            <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1">
+                <span>⚠️</span>
+                Access is limited to authorized users only
+              </p>
+            </div>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Auth Mode Toggle */}
-          <div className="flex gap-1 p-1 glass-card rounded-lg">
-            <Button
-              type="button"
-              variant={!isSignUp ? "default" : "ghost"}
-              className={`flex-1 transition-all ${!isSignUp ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50'}`}
-              onClick={() => setIsSignUp(false)}
-            >
-              <User size={16} className="mr-2" />
-              Sign In
-            </Button>
-            <Button
-              type="button"
-              variant={isSignUp ? "default" : "ghost"}
-              className={`flex-1 transition-all ${isSignUp ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50'}`}
-              onClick={() => setIsSignUp(true)}
-            >
-              <ShieldCheck size={16} className="mr-2" />
-              Sign Up
-            </Button>
-          </div>
-
           {/* Main Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Display Name (Sign Up Only) */}
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-sm font-medium text-foreground">
-                  Display Name
-                </Label>
-                <div className="relative">
-                  <User size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="displayName"
-                    name="displayName"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={formData.displayName}
-                    onChange={handleInputChange}
-                    className="pl-10 glass-card border-border/50 focus:border-primary"
-                    required={isSignUp}
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-foreground">
@@ -231,83 +163,29 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Confirm Password (Sign Up Only) */}
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-                  Confirm Password
-                </Label>
-                <div className="relative">
-                  <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="pl-10 glass-card border-border/50 focus:border-primary"
-                    required={isSignUp}
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full glass-card bg-primary hover:bg-primary/80 text-primary-foreground font-medium"
+              className="w-full glass-card bg-gradient-to-r from-primary to-accent hover:from-primary/80 hover:to-accent/80 text-white font-medium shadow-lg transition-all duration-300"
               disabled={loading}
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                  Processing...
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span className="text-white">Processing...</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  {isSignUp ? 'Create Account' : 'Sign In'}
-                  <ArrowRight size={16} />
+                  <span className="text-white font-semibold">Sign In</span>
+                  <ArrowRight size={16} className="text-white" />
                 </div>
               )}
             </Button>
           </form>
 
-          {/* Divider */}
-          <div className="relative">
-            <Separator className="bg-border/50" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="bg-background px-4 text-xs text-muted-foreground uppercase tracking-wider">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          {/* Google Sign In */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full glass-card border-border/50 hover:bg-muted/50 font-medium"
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-          >
-            <GoogleLogo size={18} className="mr-2" />
-            Google Account
-          </Button>
-
           {/* Footer */}
           <div className="text-center pt-4">
             <p className="text-xs text-muted-foreground">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary hover:underline font-medium"
-              >
-                {isSignUp ? 'Sign in' : 'Sign up'}
-              </button>
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
               Secure • Encrypted • Next-Gen Authentication
             </p>
           </div>

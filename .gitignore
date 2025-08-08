@@ -34,3 +34,4 @@ packages
 .devcontainer/
 
 .spark-workbench-id
+.vercel
