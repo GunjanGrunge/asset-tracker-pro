@@ -9,26 +9,14 @@
       }
     },
     {
-      "src": "api/**.js",
+      "src": "api/**/*.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "python-ai/api/*.py",
-      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/ai/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
-    },
-    {
-      "src": "/python-ai/api/(.*)",
-      "dest": "/python-ai/api/$1.py"
     },
     {
       "src": "/(.*)",
@@ -54,10 +42,5 @@
     "VITE_FIREBASE_STORAGE_BUCKET": "@vite-firebase-storage-bucket",
     "VITE_FIREBASE_MESSAGING_SENDER_ID": "@vite-firebase-messaging-sender-id",
     "VITE_FIREBASE_APP_ID": "@vite-firebase-app-id"
-  },
-  "functions": {
-    "python-ai/simple_main.py": {
-      "runtime": "python3.9"
-    }
   }
 }
