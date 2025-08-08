@@ -9,7 +9,8 @@
         "build": "tsc -b --noCheck && vite build",
         "lint": "eslint .",
         "optimize": "vite optimize",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "vercel-build": "npm run build"
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",

@@ -11,3 +11,4 @@ python-multipart
 requests
 sqlalchemy
 psycopg2-binary
+mangum

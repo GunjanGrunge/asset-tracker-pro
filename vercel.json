@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "api/**.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "python-ai/requirements.txt",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/ai/(.*)",
+      "dest": "/python-ai/simple_main.py"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "AWS_ACCESS_KEY_ID": "@aws-access-key-id",
+    "AWS_SECRET_ACCESS_KEY": "@aws-secret-access-key",
+    "AWS_REGION": "@aws-region",
+    "AWS_BEDROCK_REGION": "@aws-bedrock-region",
+    "AWS_BEDROCK_MODEL_ID": "@aws-bedrock-model-id",
+    "S3_BUCKET_NAME": "@s3-bucket-name",
+    "S3_REGION": "@s3-region",
+    "DB_HOST": "@db-host",
+    "DB_PORT": "@db-port",
+    "DB_NAME": "@db-name",
+    "DB_USERNAME": "@db-username",
+    "DB_PASSWORD": "@db-password",
+    "VITE_FIREBASE_API_KEY": "@vite-firebase-api-key",
+    "VITE_FIREBASE_AUTH_DOMAIN": "@vite-firebase-auth-domain",
+    "VITE_FIREBASE_PROJECT_ID": "@vite-firebase-project-id",
+    "VITE_FIREBASE_STORAGE_BUCKET": "@vite-firebase-storage-bucket",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@vite-firebase-messaging-sender-id",
+    "VITE_FIREBASE_APP_ID": "@vite-firebase-app-id"
+  },
+  "functions": {
+    "python-ai/simple_main.py": {
+      "runtime": "python3.9"
+    }
+  }
+}
