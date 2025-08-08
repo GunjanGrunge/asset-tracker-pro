@@ -10,18 +10,16 @@
 
 ## 🔧 Deployment Steps
 
-### 1. **Vercel Deployment (Recommended)**
+### 1. **GitHub → Vercel Deployment (Current Setup)**
 
-#### A. Connect to Vercel:
-```bash
-# Install Vercel CLI
-npm i -g vercel
+#### A. Connect GitHub Repository to Vercel:
+1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
+2. Click "New Project" 
+3. Import your `asset-tracker-pro` repository
+4. Vercel will automatically detect the configuration from `vercel.json`
 
-# Login and deploy
-vercel --prod
-```
-
-#### B. Set Environment Variables in Vercel Dashboard:
+#### B. Configure Environment Variables in Vercel Dashboard:
+Go to Project Settings → Environment Variables and add:
 ```bash
 # AWS Configuration
 AWS_ACCESS_KEY_ID=your_access_key
@@ -108,12 +106,26 @@ CMD ["node", "backend/server.js"]
 5. **✅ Environment Variables**: Configured for production secrets
 6. **✅ CORS**: Set up for production domains
 
-## 🎯 **Next Steps:**
+## 🎯 **Next Steps for GitHub → Vercel Deployment:**
 
-1. **Push to GitHub** (if not already done)
-2. **Connect to Vercel** and import your repository
-3. **Set environment variables** in Vercel dashboard
-4. **Deploy automatically** on every push
+1. **✅ Code Pushed to GitHub** (Just completed!)
+2. **Go to Vercel Dashboard**: [vercel.com](https://vercel.com)
+3. **Import Repository**: Click "New Project" → Import `asset-tracker-pro`
+4. **Set Environment Variables**: Add all the variables listed above
+5. **Deploy**: Vercel will build and deploy automatically
+6. **Auto-Deploy**: Future pushes to `main` branch will auto-deploy
+
+## 🔄 **What Happens on Deployment:**
+
+1. **Frontend Build**: React app builds to static files
+2. **API Functions**: Node.js backend becomes serverless functions at `/api/*`
+3. **AI Service**: Python FastAPI becomes serverless functions at `/python-ai/*`
+4. **Environment**: All your AWS, Firebase, and database connections work in production
+
+## 🚀 **Your Live URLs After Deployment:**
+- **App**: `https://asset-tracker-pro-[hash].vercel.app`
+- **API**: `https://asset-tracker-pro-[hash].vercel.app/api/health`
+- **AI Service**: `https://asset-tracker-pro-[hash].vercel.app/python-ai/health`
 
 Your AI service will now be included in the deployment! 🚀
 
