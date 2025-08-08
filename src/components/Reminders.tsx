@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -59,8 +58,8 @@ const reminderTypes = [
 ]
 
 export default function Reminders() {
-  const [assets, setAssets] = useKV<Asset[]>('assets', [])
-  const [reminders, setReminders] = useKV<Reminder[]>('reminders', [])
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [reminders, setReminders] = useState<Reminder[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null)

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,8 +34,8 @@ interface Reminder {
 }
 
 export default function Dashboard() {
-  const [assets, setAssets] = useKV<Asset[]>('assets', [])
-  const [reminders, setReminders] = useKV<Reminder[]>('reminders', [])
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [reminders, setReminders] = useState<Reminder[]>([])
   const [animateMetrics, setAnimateMetrics] = useState(false)
 
   // Load data from backend on component mount

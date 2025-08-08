@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -77,7 +76,7 @@ const categories = [
 ]
 
 export default function AddAsset() {
-  const [assets, setAssets] = useKV<Asset[]>('assets', [])
+  const [assets, setAssets] = useState<Asset[]>([])
   const [activeTab, setActiveTab] = useState<'manual' | 'receipt'>('manual')
   const [isProcessing, setIsProcessing] = useState(false)
   const [parsedData, setParsedData] = useState<ParsedReceipt | null>(null)
