@@ -20,11 +20,19 @@ import aiRoutes from './routes/ai.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Allow frontend assets
+  crossOriginEmbedderPolicy: false
+}));
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production' 
+    ? true // Allow all origins in production for EB
+    : process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
 
@@ -56,10 +64,37 @@ app.use('/api/reminders', reminderRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/ai', aiRoutes);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
+
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = join(__dirname, '../frontend/dist');
+  console.log('🎨 Serving frontend from:', frontendPath);
+  
+  // Serve static files
+  app.use(express.static(frontendPath));
+  
+  // Handle React Router - send all non-API requests to index.html
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api/')) {
+      res.sendFile(join(frontendPath, 'index.html'));
+    } else {
+      res.status(404).json({ error: 'API route not found' });
+    }
+  });
+} else {
+  // 404 handler for development
+  app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {
