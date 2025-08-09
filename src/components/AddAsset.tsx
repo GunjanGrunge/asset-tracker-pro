@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiRequest, API_BASE_URL } from '@/lib/api'
+import { processReceiptWithBedrock, type ReceiptData } from '@/lib/aiService'
 import { toast } from 'sonner'
 import { 
   Upload, 
@@ -198,32 +199,15 @@ export default function AddAsset() {
     try {
       console.log('Starting AI receipt parsing...')
       
-      // Create form data for AI parsing
-      const aiFormData = new FormData()
-      aiFormData.append('file', file)
-      
-      // Call AI parsing API
-      const response = await fetch('http://localhost:8000/api/ai/parse-receipt', {
-        method: 'POST',
-        body: aiFormData
-      })
+      // Process receipt directly in the frontend
+      const processingResult = await processReceiptWithBedrock(file)
+      console.log('AI parsing result:', processingResult)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || errorData.message || 'AI parsing failed')
+      if (!processingResult.success || !processingResult.data) {
+        throw new Error(processingResult.error || 'AI parsing failed')
       }
 
-      const result = await response.json()
-      console.log('AI parsing result:', result)
-      console.log('Extracted date:', result.extracted_data?.data?.date)
-      console.log('Extracted category:', result.extracted_data?.data?.category)
-
-      if (!result.success) {
-        throw new Error(result.message || 'AI parsing failed')
-      }
-
-      // Extract data from our Python service response structure
-      const extractedData = result.extracted_data?.data || {}
+      const receiptData = processingResult.data
 
       // Helper function to convert date formats
       const convertDate = (dateStr: string): string => {
@@ -299,13 +283,13 @@ export default function AddAsset() {
 
       // Map AI extracted data to our form structure
       const mappedData: ParsedReceipt = {
-        name: extractedData.item_name || extractedData.description || 'Unknown Item',
-        category: mapCategory(extractedData.category),
-        price: extractedData.price || 0,
-        date: convertDate(extractedData.date),
-        model: extractedData.model_number || extractedData.model,
-        serialNumber: extractedData.serial_number,
-        warrantyExpiry: extractedData.warranty_expiry || extractedData.warranty_period
+        name: receiptData.items?.[0]?.name || receiptData.vendor || 'Unknown Item',
+        category: mapCategory(receiptData.category || receiptData.items?.[0]?.category || ''),
+        price: receiptData.total || receiptData.items?.[0]?.price || 0,
+        date: convertDate(receiptData.date || ''),
+        model: '', // Not available in ReceiptData
+        serialNumber: '', // Not available in ReceiptData
+        warrantyExpiry: '' // Not available in ReceiptData
       }
       
       console.log('Mapped data:', mappedData)
@@ -318,7 +302,7 @@ export default function AddAsset() {
         category: mappedData.category,
         purchasePrice: mappedData.price.toString(),
         purchaseDate: mappedData.date,
-        description: extractedData.description || mappedData.name,
+        description: receiptData.vendor || mappedData.name,
         model: mappedData.model || '',
         serialNumber: mappedData.serialNumber || '',
         warrantyExpiry: mappedData.warrantyExpiry || ''
@@ -334,7 +318,7 @@ export default function AddAsset() {
       setUploadedDocuments(prev => [...prev, receiptDocument])
       
       // Show success message
-      toast.success(`Receipt parsed successfully! 🤖 AI extracted ${Object.keys(extractedData).length} fields. Please review and edit details if needed.`)
+      toast.success(`Receipt parsed successfully! 🤖 AI extracted data. Please review and edit details if needed.`)
       
       // Clear the file input
       event.target.value = ''
