@@ -5,9 +5,9 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
 import multer from 'multer';
 import fs from 'fs';
+import { processReceiptWithAI, testBedrockConnection } from '../backend/services/aiReceiptProcessor.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -54,14 +54,14 @@ const upload = multer({
 // Static files - serve the built frontend
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/ai', aiRoutes);
 
-// Python AI service integration
+// AI Receipt Processing - Now using Node.js with AWS Bedrock
 app.post('/api/python/process-receipt', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
@@ -69,68 +69,35 @@ app.post('/api/python/process-receipt', upload.single('file'), async (req, res) 
     }
 
     const filePath = req.file.path;
+    const fileName = req.file.originalname || 'receipt';
     
-    // Try different Python script paths for different environments
-    const possiblePaths = [
-      path.join(__dirname, '../python-ai/simple_main.py'),
-      path.join(process.cwd(), 'python-ai/simple_main.py'),
-      './python-ai/simple_main.py'
-    ];
+    console.log('Processing receipt:', fileName);
     
-    let pythonScriptPath = possiblePaths[0];
-    for (const testPath of possiblePaths) {
-      if (fs.existsSync(testPath)) {
-        pythonScriptPath = testPath;
-        break;
-      }
+    // Use Node.js AI implementation with AWS Bedrock
+    const result = await processReceiptWithAI(filePath, fileName);
+    
+    // Clean up uploaded file
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
     }
-    
-    console.log('Using Python script path:', pythonScriptPath);
-    
-    // Create a promise to handle the Python process
-    const processFile = () => {
-      return new Promise((resolve, reject) => {
-        const python = spawn('python3', [pythonScriptPath, filePath], {
-          env: { ...process.env }
-        });
-        let output = '';
-        let error = '';
 
-        python.stdout.on('data', (data) => {
-          output += data.toString();
-        });
-
-        python.stderr.on('data', (data) => {
-          error += data.toString();
-        });
-
-        python.on('close', (code) => {
-          // Clean up uploaded file
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
-
-          if (code !== 0) {
-            console.error('Python process failed:', error);
-            reject(new Error(error || 'Python process failed'));
-          } else {
-            try {
-              const result = JSON.parse(output);
-              resolve(result);
-            } catch (parseError) {
-              console.error('Failed to parse Python output:', output);
-              reject(new Error('Invalid JSON response from Python service'));
-            }
-          }
-        });
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(500).json({
+        error: 'Failed to process receipt',
+        details: result.error
       });
-    };
-
-    const result = await processFile();
-    res.json(result);
+    }
 
   } catch (error) {
-    console.error('Error processing receipt:', error);
+    console.error('Error in receipt processing endpoint:', error);
+    
+    // Clean up uploaded file in case of error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
     res.status(500).json({ 
       error: 'Failed to process receipt',
       details: error.message 
@@ -138,94 +105,78 @@ app.post('/api/python/process-receipt', upload.single('file'), async (req, res) 
   }
 });
 
-// Python AI health check
+// AI Service Health Check - Now checks AWS Bedrock
 app.get('/api/python/health', async (req, res) => {
   try {
-    const checkHealth = () => {
-      return new Promise((resolve, reject) => {
-        const python = spawn('python3', ['--version']);
-        let output = '';
-        let error = '';
-
-        python.stdout.on('data', (data) => {
-          output += data.toString();
-        });
-
-        python.stderr.on('data', (data) => {
-          error += data.toString();
-        });
-
-        python.on('close', (code) => {
-          if (code !== 0) {
-            reject(new Error(error || 'Python health check failed'));
-          } else {
-            resolve(output.trim() || error.trim());
-          }
-        });
-      });
-    };
-
-    const result = await checkHealth();
-    res.json({
-      status: 'healthy',
-      service: 'Python AI Service',
-      message: result,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    // Try with 'python' instead of 'python3'
-    try {
-      const checkHealthFallback = () => {
-        return new Promise((resolve, reject) => {
-          const python = spawn('python', ['--version']);
-          let output = '';
-          let error = '';
-
-          python.stdout.on('data', (data) => {
-            output += data.toString();
-          });
-
-          python.stderr.on('data', (data) => {
-            error += data.toString();
-          });
-
-          python.on('close', (code) => {
-            if (code !== 0) {
-              reject(new Error(error || 'Python health check failed'));
-            } else {
-              resolve(output.trim() || error.trim());
-            }
-          });
-        });
-      };
-
-      const result = await checkHealthFallback();
+    const result = await testBedrockConnection();
+    
+    if (result.success) {
       res.json({
         status: 'healthy',
-        service: 'Python AI Service',
-        message: result,
+        service: 'AWS Bedrock AI Service',
+        model: result.model,
         timestamp: new Date().toISOString()
       });
-    } catch (fallbackError) {
+    } else {
       res.status(500).json({
         status: 'unhealthy',
-        service: 'Python AI Service',
-        error: fallbackError.message,
+        service: 'AWS Bedrock AI Service',
+        error: result.error,
         timestamp: new Date().toISOString()
       });
     }
+  } catch (error) {
+    res.status(500).json({
+      status: 'unhealthy',
+      service: 'AWS Bedrock AI Service',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
-// Health check
+// Test endpoints
+app.get('/api/test/db', async (req, res) => {
+  try {
+    // Import the database config dynamically
+    const { pool } = await import('../backend/config/database.js');
+    const result = await pool.query('SELECT NOW() as current_time');
+    res.json({
+      status: 'connected',
+      database: 'PostgreSQL',
+      current_time: result.rows[0].current_time,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      database: 'PostgreSQL',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.get('/api/test/bedrock', async (req, res) => {
+  try {
+    const result = await testBedrockConnection();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Main health check for all services
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     services: {
       frontend: 'healthy',
       backend: 'healthy',
-      python: 'healthy'
+      ai: 'healthy'
     },
     service: 'AssetTracker Unified API',
     timestamp: new Date().toISOString(),
