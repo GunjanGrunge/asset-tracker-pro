@@ -8,17 +8,33 @@ dotenv.config({ path: join(dirname(fileURLToPath(import.meta.url)), '../../.env'
 
 const { Pool } = pkg;
 
+// Database connection configuration
+let dbConfig;
+
+// Check if we have a DATABASE_URL (common in production/Vercel)
+if (process.env.DATABASE_URL) {
+  dbConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  };
+} else {
+  // Use individual environment variables
+  dbConfig = {
+    host: process.env.DB_HOST?.trim(),
+    port: parseInt(process.env.DB_PORT) || 5432,
+    database: process.env.DB_NAME?.trim(),
+    user: process.env.DB_USERNAME?.trim(),
+    password: process.env.DB_PASSWORD?.trim(),
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  };
+}
+
 // Database connection pool
 const pool = new Pool({
-  host: process.env.DB_HOST?.trim(),
-  port: parseInt(process.env.DB_PORT) || 5432,
-  database: process.env.DB_NAME?.trim(),
-  user: process.env.DB_USERNAME?.trim(),
-  password: process.env.DB_PASSWORD?.trim(),
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  ...dbConfig,
   max: 20, // maximum number of clients in the pool
   idleTimeoutMillis: 30000, // close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // return an error after 2 seconds if connection could not be established
+  connectionTimeoutMillis: 10000, // return an error after 10 seconds if connection could not be established
 });
 
 // Test database connection

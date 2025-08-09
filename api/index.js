@@ -69,12 +69,30 @@ app.post('/api/python/process-receipt', upload.single('file'), async (req, res) 
     }
 
     const filePath = req.file.path;
-    const pythonScriptPath = path.join(__dirname, '../python-ai/simple_main.py');
+    
+    // Try different Python script paths for different environments
+    const possiblePaths = [
+      path.join(__dirname, '../python-ai/simple_main.py'),
+      path.join(process.cwd(), 'python-ai/simple_main.py'),
+      './python-ai/simple_main.py'
+    ];
+    
+    let pythonScriptPath = possiblePaths[0];
+    for (const testPath of possiblePaths) {
+      if (fs.existsSync(testPath)) {
+        pythonScriptPath = testPath;
+        break;
+      }
+    }
+    
+    console.log('Using Python script path:', pythonScriptPath);
     
     // Create a promise to handle the Python process
     const processFile = () => {
       return new Promise((resolve, reject) => {
-        const python = spawn('python', [pythonScriptPath, filePath]);
+        const python = spawn('python3', [pythonScriptPath, filePath], {
+          env: { ...process.env }
+        });
         let output = '';
         let error = '';
 
@@ -93,12 +111,14 @@ app.post('/api/python/process-receipt', upload.single('file'), async (req, res) 
           }
 
           if (code !== 0) {
+            console.error('Python process failed:', error);
             reject(new Error(error || 'Python process failed'));
           } else {
             try {
               const result = JSON.parse(output);
               resolve(result);
             } catch (parseError) {
+              console.error('Failed to parse Python output:', output);
               reject(new Error('Invalid JSON response from Python service'));
             }
           }
@@ -121,11 +141,9 @@ app.post('/api/python/process-receipt', upload.single('file'), async (req, res) 
 // Python AI health check
 app.get('/api/python/health', async (req, res) => {
   try {
-    const pythonScriptPath = path.join(__dirname, '../python-ai/simple_main.py');
-    
     const checkHealth = () => {
       return new Promise((resolve, reject) => {
-        const python = spawn('python', ['-c', 'print("Python service is healthy")']);
+        const python = spawn('python3', ['--version']);
         let output = '';
         let error = '';
 
@@ -141,7 +159,7 @@ app.get('/api/python/health', async (req, res) => {
           if (code !== 0) {
             reject(new Error(error || 'Python health check failed'));
           } else {
-            resolve(output.trim());
+            resolve(output.trim() || error.trim());
           }
         });
       });
@@ -156,12 +174,47 @@ app.get('/api/python/health', async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
-      status: 'unhealthy',
-      service: 'Python AI Service',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
+    // Try with 'python' instead of 'python3'
+    try {
+      const checkHealthFallback = () => {
+        return new Promise((resolve, reject) => {
+          const python = spawn('python', ['--version']);
+          let output = '';
+          let error = '';
+
+          python.stdout.on('data', (data) => {
+            output += data.toString();
+          });
+
+          python.stderr.on('data', (data) => {
+            error += data.toString();
+          });
+
+          python.on('close', (code) => {
+            if (code !== 0) {
+              reject(new Error(error || 'Python health check failed'));
+            } else {
+              resolve(output.trim() || error.trim());
+            }
+          });
+        });
+      };
+
+      const result = await checkHealthFallback();
+      res.json({
+        status: 'healthy',
+        service: 'Python AI Service',
+        message: result,
+        timestamp: new Date().toISOString()
+      });
+    } catch (fallbackError) {
+      res.status(500).json({
+        status: 'unhealthy',
+        service: 'Python AI Service',
+        error: fallbackError.message,
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 });
 

@@ -33,7 +33,9 @@ export const formatDate = (date: string | Date): string => {
 /**
  * API base URL for backend communication
  */
-export const API_BASE_URL = 'http://localhost:5000/api'
+export const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/api' 
+  : 'http://localhost:5000/api'
 
 /**
  * Make authenticated API requests
