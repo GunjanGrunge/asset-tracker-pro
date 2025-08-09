@@ -22,11 +22,27 @@
       "dest": "/api/index.js"
     },
     {
+      "src": "/health",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(.*\\.(css|js|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "dest": "/dist/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/dist/index.html"
     }
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
   }
 }

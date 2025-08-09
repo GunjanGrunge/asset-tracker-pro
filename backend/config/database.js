@@ -16,6 +16,10 @@ if (process.env.DATABASE_URL) {
   dbConfig = {
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    // Serverless-friendly connection settings
+    max: 1, // Limit connections for serverless
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
   };
 } else {
   // Use individual environment variables
@@ -26,15 +30,19 @@ if (process.env.DATABASE_URL) {
     user: process.env.DB_USERNAME?.trim(),
     password: process.env.DB_PASSWORD?.trim(),
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    // Serverless-friendly connection settings
+    max: 1, // Limit connections for serverless
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
   };
 }
 
 // Database connection pool
 const pool = new Pool({
   ...dbConfig,
-  max: 20, // maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000, // return an error after 10 seconds if connection could not be established
+  max: dbConfig.max || 1, // Use configured max or default to 1 for serverless
+  idleTimeoutMillis: dbConfig.idleTimeoutMillis || 30000,
+  connectionTimeoutMillis: dbConfig.connectionTimeoutMillis || 10000,
 });
 
 // Test database connection

@@ -28,9 +28,15 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+// CORS configuration for Vercel
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://asset-tracker-pro.vercel.app', 'https://*.vercel.app'] 
+    : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
 }));
 
 // Rate limiting
@@ -169,6 +175,21 @@ app.get('/api/test/bedrock', async (req, res) => {
 });
 
 // Main health check for all services
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    services: {
+      frontend: 'healthy',
+      backend: 'healthy',
+      ai: 'healthy'
+    },
+    service: 'AssetTracker Unified API',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Also support /api/health for consistency
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
