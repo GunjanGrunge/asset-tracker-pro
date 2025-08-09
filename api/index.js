@@ -17,6 +17,16 @@ const __dirname = path.dirname(__filename);
 // Load environment variables
 dotenv.config();
 
+// Debug environment variables (remove in production)
+console.log('🔧 Environment check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DB_HOST: !!process.env.DB_HOST,
+  DATABASE_URL: !!process.env.DATABASE_URL,
+  AWS_ACCESS_KEY_ID: !!process.env.AWS_ACCESS_KEY_ID,
+  S3_BUCKET_NAME: !!process.env.S3_BUCKET_NAME,
+  S3_REGION: !!process.env.S3_REGION
+});
+
 // Import routes
 import authRoutes from '../backend/routes/auth.js';
 import assetRoutes from '../backend/routes/assets.js';
@@ -25,6 +35,9 @@ import receiptRoutes from '../backend/routes/receipts.js';
 import aiRoutes from '../backend/routes/ai.js';
 
 const app = express();
+
+// Trust proxy for Vercel (required for rate limiting and X-Forwarded-For headers)
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
@@ -39,12 +52,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
 }));
 
-// Rate limiting
+// Rate limiting - configured for Vercel
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Trust proxy is set above, so this should work correctly on Vercel
 });
-app.use(limiter);
+app.use('/api/', limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
