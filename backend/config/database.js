@@ -15,7 +15,11 @@ let dbConfig;
 if (process.env.DATABASE_URL) {
   dbConfig = {
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.NODE_ENV === 'production' ? { 
+      rejectUnauthorized: false,
+      // For AWS RDS, we need to handle self-signed certificates
+      checkServerIdentity: () => undefined
+    } : false,
     // Serverless-friendly connection settings
     max: 1, // Limit connections for serverless
     idleTimeoutMillis: 30000,
@@ -29,7 +33,11 @@ if (process.env.DATABASE_URL) {
     database: process.env.DB_NAME?.trim(),
     user: process.env.DB_USERNAME?.trim(),
     password: process.env.DB_PASSWORD?.trim(),
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DB_SSL === 'true' ? { 
+      rejectUnauthorized: false,
+      // For AWS RDS, we need to handle self-signed certificates
+      checkServerIdentity: () => undefined
+    } : false,
     // Serverless-friendly connection settings
     max: 1, // Limit connections for serverless
     idleTimeoutMillis: 30000,
