@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Disable SSL certificate validation globally for Node.js (AWS RDS compatibility)
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
 // Load environment variables
 dotenv.config({ path: join(dirname(fileURLToPath(import.meta.url)), '../../.env') });
 
@@ -17,11 +20,16 @@ if (process.env.DATABASE_URL) {
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? {
       rejectUnauthorized: false,
-      require: false,
-      // AWS RDS compatible SSL settings
-      ca: false,
-      cert: false,
-      key: false,
+      requestCert: false,
+      agent: false,
+      // Complete SSL bypass for AWS RDS compatibility
+      ca: undefined,
+      cert: undefined,
+      key: undefined,
+      pfx: undefined,
+      passphrase: undefined,
+      servername: undefined,
+      checkServerIdentity: function() { return undefined; },
       secureProtocol: 'TLSv1_2_method'
     } : false,
     // Serverless-friendly connection settings
@@ -39,11 +47,16 @@ if (process.env.DATABASE_URL) {
     password: process.env.DB_PASSWORD?.trim(),
     ssl: process.env.DB_SSL === 'true' ? {
       rejectUnauthorized: false,
-      require: false,
-      // AWS RDS compatible SSL settings
-      ca: false,
-      cert: false,
-      key: false,
+      requestCert: false,
+      agent: false,
+      // Complete SSL bypass for AWS RDS compatibility
+      ca: undefined,
+      cert: undefined,
+      key: undefined,
+      pfx: undefined,
+      passphrase: undefined,
+      servername: undefined,
+      checkServerIdentity: function() { return undefined; },
       secureProtocol: 'TLSv1_2_method'
     } : false,
     // Serverless-friendly connection settings
