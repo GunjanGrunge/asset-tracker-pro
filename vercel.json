@@ -11,16 +11,32 @@
     {
       "src": "api/**/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "python-ai/api/**/*.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
+      "src": "/api/python/(.*)",
+      "dest": "/python-ai/api/$1.py"
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/api/$1.js"
     },
     {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
+    },
+    "python-ai/api/**/*.py": {
+      "runtime": "python3.9"
+    }
+  }
 }
