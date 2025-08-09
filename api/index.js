@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import fs from 'fs';
 import { processReceiptWithAI, testBedrockConnection } from '../backend/services/aiReceiptProcessor.js';
+import { pool } from '../backend/config/database.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -138,8 +139,6 @@ app.get('/api/python/health', async (req, res) => {
 // Test endpoints
 app.get('/api/test/db', async (req, res) => {
   try {
-    // Import the database config dynamically
-    const { pool } = await import('../backend/config/database.js');
     const result = await pool.query('SELECT NOW() as current_time');
     res.json({
       status: 'connected',
@@ -200,3 +199,11 @@ app.use((error, req, res, next) => {
 
 // For Vercel serverless deployment
 export default app;
+
+// For local testing
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+}

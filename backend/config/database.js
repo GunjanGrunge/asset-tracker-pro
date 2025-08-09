@@ -85,3 +85,4 @@ export const ensureUserExists = async (firebaseUid, email, displayName = null) =
 };
 
 export default { query, getClient, ensureUserExists };
+export { pool };

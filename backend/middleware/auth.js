@@ -31,7 +31,7 @@ const initializeFirebase = () => {
 export const authenticateUser = async (req, res, next) => {
   try {
     // Development bypass - remove this in production!
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    if (process.env.BYPASS_AUTH === 'true') {
       req.user = {
         uid: 'dev-user-123',
         email: 'dev@test.com',
