@@ -1,0 +1,28 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - '# Backend API build steps'
+        - cd backend
+        - npm ci
+        - '# Python AI service setup'
+        - cd ../python-ai
+        - python -m venv venv
+        - if [ "$OS" = "Windows_NT" ]; then source venv/Scripts/activate; else source venv/bin/activate; fi
+        - pip install -r requirements.txt
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*

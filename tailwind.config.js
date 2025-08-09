@@ -1,4 +1,6 @@
 import fs from "fs";
+// Import our Radix UI colors from the JavaScript module instead of CSS
+import { colors as radixColors } from './src/lib/theme-colors.js';
 
 /** @type {import('tailwindcss').Config} */
 
