@@ -15,10 +15,13 @@ let dbConfig;
 if (process.env.DATABASE_URL) {
   dbConfig = {
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { 
+    ssl: process.env.NODE_ENV === 'production' ? {
       rejectUnauthorized: false,
-      // Disable all SSL certificate validation for serverless
-      checkServerIdentity: () => undefined,
+      require: false,
+      // AWS RDS compatible SSL settings
+      ca: false,
+      cert: false,
+      key: false,
       secureProtocol: 'TLSv1_2_method'
     } : false,
     // Serverless-friendly connection settings
@@ -34,10 +37,13 @@ if (process.env.DATABASE_URL) {
     database: process.env.DB_NAME?.trim(),
     user: process.env.DB_USERNAME?.trim(),
     password: process.env.DB_PASSWORD?.trim(),
-    ssl: process.env.DB_SSL === 'true' ? { 
+    ssl: process.env.DB_SSL === 'true' ? {
       rejectUnauthorized: false,
-      // Disable all SSL certificate validation for serverless
-      checkServerIdentity: () => undefined,
+      require: false,
+      // AWS RDS compatible SSL settings
+      ca: false,
+      cert: false,
+      key: false,
       secureProtocol: 'TLSv1_2_method'
     } : false,
     // Serverless-friendly connection settings
