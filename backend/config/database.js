@@ -17,8 +17,9 @@ if (process.env.DATABASE_URL) {
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { 
       rejectUnauthorized: false,
-      // For AWS RDS, we need to handle self-signed certificates
-      checkServerIdentity: () => undefined
+      // Disable all SSL certificate validation for serverless
+      checkServerIdentity: () => undefined,
+      secureProtocol: 'TLSv1_2_method'
     } : false,
     // Serverless-friendly connection settings
     max: 1, // Limit connections for serverless
@@ -35,8 +36,9 @@ if (process.env.DATABASE_URL) {
     password: process.env.DB_PASSWORD?.trim(),
     ssl: process.env.DB_SSL === 'true' ? { 
       rejectUnauthorized: false,
-      // For AWS RDS, we need to handle self-signed certificates
-      checkServerIdentity: () => undefined
+      // Disable all SSL certificate validation for serverless
+      checkServerIdentity: () => undefined,
+      secureProtocol: 'TLSv1_2_method'
     } : false,
     // Serverless-friendly connection settings
     max: 1, // Limit connections for serverless
