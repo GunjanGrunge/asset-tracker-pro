@@ -9,34 +9,26 @@
       }
     },
     {
-      "src": "api/**/*.js",
+      "src": "api/index.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "python-ai/api/**/*.py",
-      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/python/(.*)",
-      "dest": "/python-ai/api/$1.py"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "/api/$1.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/dist/index.html"
     }
   ],
   "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    },
-    "python-ai/api/**/*.py": {
-      "runtime": "python3.9"
+    "api/index.js": {
+      "maxDuration": 30
     }
+  },
+  "env": {
+    "NODE_ENV": "production"
   }
 }
